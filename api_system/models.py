@@ -3,14 +3,16 @@ from django.db import models
 class Company(models.Model):
     company_name = models.CharField(max_length=100)
     is_multi_main = models.BooleanField(default=False)
-    main_company = models.ForeignKey('self', on_delete=models.CASCADE)
+    main_company = models.ForeignKey('self', on_delete=models.CASCADE, null=True)
 
 class Worker(models.Model):
     class State(models.IntegerChoices):
         EVALUATED = 1
         IN_INTERVENTION = 2
         INTERVENED = 3
+    rut = models.CharField(max_length=20, unique=True)
     user_name = models.CharField(max_length=100)
+    email = models.EmailField(unique=True)
     area_id = models.IntegerField()
     area_name = models.CharField(max_length=100)
     post_id = models.IntegerField()

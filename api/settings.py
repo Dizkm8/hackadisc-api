@@ -42,6 +42,7 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
     "corsheaders",
+    "api_system",
     "api_auth",
 ]
 
@@ -107,6 +108,8 @@ AUTH_PASSWORD_VALIDATORS = [
 ]
 
 # Authentication Classes
+AUTH_USER_MODEL = 'api_auth.User'
+
 REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": (
         "rest_framework_simplejwt.authentication.JWTAuthentication",
