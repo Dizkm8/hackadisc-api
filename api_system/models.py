@@ -21,7 +21,7 @@ class Worker(models.Model):
     state = models.IntegerField(choices=State, default=State.EVALUATED)
     
     def calculate_rating(self):
-        return 'A';
+        return 'A'
 
 class Evaluation(models.Model):
     worker = models.ForeignKey("Worker", on_delete=models.CASCADE)
