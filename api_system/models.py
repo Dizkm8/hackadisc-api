@@ -7,6 +7,7 @@ class Company(models.Model):
 
 class Worker(models.Model):
     class State(models.IntegerChoices):
+        NOT_EVALUATED = 0
         EVALUATED = 1
         IN_INTERVENTION = 2
         INTERVENED = 3
