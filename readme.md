@@ -13,14 +13,11 @@
         python -m venv env
     ```
 
-2. Copiar el archivo .env.example y renombrarlo a .env, luego configurar las variables de entorno:
+2. Copiar el archivo .env.TEMPLATE y renombrarlo a .env, luego configurar las variables de entorno:
     ```bash
         touch .env.example .env # Usar powershell y no CMD en el caso de Windows
     ```
-   Luego configurar las variables de entorno en el archivo .env, como las credenciales de la mongoDB y la ApiKey de
-   OpenAI.
-
-   **Nota**: El secreto de DJANGO funciona tal como está, pero debe ser cambiado para ambientes productivos.
+   **Nota**: DJANGO_SECRET_KEY funciona tal como está, pero debe ser cambiado para ambientes productivos.
 
 3. activar el ambiente virtual utilizando:
     ```bash
