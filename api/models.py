@@ -17,6 +17,9 @@ class Worker(models.Model):
     post_name = models.CharField(max_length=100)
     company = models.ForeignKey("Company", on_delete=models.CASCADE)
     state = models.IntegerField(choices=State, default=State.EVALUATED)
+    
+    def calculate_rating(self):
+        return 'A';
 
 class Evaluation(models.Model):
     worker = models.ForeignKey("Worker", on_delete=models.CASCADE)
