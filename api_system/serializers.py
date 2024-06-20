@@ -13,11 +13,11 @@ class CompanySerializer(serializers.ModelSerializer):
     class Meta:
         model = Company
         fields = "__all__"  # You can customize the fields if needed
+        
 class WorkersSerializer(serializers.ModelSerializer):
     company_name = serializers.SerializerMethodField()
     latest_evaluation_letter_grade = serializers.SerializerMethodField()
     state_name = serializers.CharField(source='get_state_display', read_only=True)
-
 
     class Meta:
         model = Worker
@@ -29,7 +29,21 @@ class WorkersSerializer(serializers.ModelSerializer):
     def get_latest_evaluation_letter_grade(self, obj):
         return obj.calculate_latest_evaluation_letter_grade()
     
+class WorkerDetailSerializer(serializers.ModelSerializer):
+    company_name = serializers.SerializerMethodField()
+    state_name = serializers.CharField(source='get_state_display', read_only=True)
 
+    class Meta:
+        model = Worker
+        fields = [
+            'id', 'rut', 'user_name', 'email', 'area_name', 
+            'post_name', 'company_name', 'state_name',
+            'adaptability_to_change', 'safe_conduct', 'dynamism_energy',
+            'personal_effectiveness', 'initiative', 'working_under_pressure'
+        ]
+        
+    def get_company_name(self, obj):
+        return obj.company.company_name
 
 
 class EvaluationSerializer(serializers.ModelSerializer):
