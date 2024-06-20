@@ -10,7 +10,9 @@ class Worker(models.Model):
         EVALUATED = 1
         IN_INTERVENTION = 2
         INTERVENED = 3
+    rut = models.CharField(max_length=20, unique=True)
     user_name = models.CharField(max_length=100)
+    email = models.EmailField(unique=True)
     area_id = models.IntegerField()
     area_name = models.CharField(max_length=100)
     post_id = models.IntegerField()

@@ -5,7 +5,7 @@
       <driver-ref>sqlite.xerial</driver-ref>
       <synchronize>true</synchronize>
       <jdbc-driver>org.sqlite.JDBC</jdbc-driver>
-      <jdbc-url>jdbc:sqlite:C:\Users\david\Dvd\hackadisc\hackadisc-api\db.sqlite3</jdbc-url>
+      <jdbc-url>jdbc:sqlite:C:\Users\jose6\Repos\HackaDISC\hackadisc-api\db.sqlite3</jdbc-url>
       <working-dir>$ProjectFileDir$</working-dir>
     </data-source>
   </component>
