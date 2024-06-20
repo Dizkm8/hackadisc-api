@@ -38,7 +38,7 @@ class User(AbstractBaseUser):
     rut = models.CharField(max_length=20, unique=True)
     user_name = models.CharField(max_length=100)
     area_id = models.IntegerField(default=-1)
-    company = models.ForeignKey("api_system.Company", on_delete=models.CASCADE)
+    company = models.ForeignKey("api_system.Company", on_delete=models.CASCADE, null=True)
     role = models.IntegerField(choices=ROLE, default=ROLE.ADMIN_AREA)
 
     objects = UserManager()

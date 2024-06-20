@@ -3,7 +3,7 @@ from django.db import models
 class Company(models.Model):
     company_name = models.CharField(max_length=100)
     is_multi_main = models.BooleanField(default=False)
-    main_company = models.ForeignKey('self', on_delete=models.CASCADE)
+    main_company = models.ForeignKey('self', on_delete=models.CASCADE, null=True)
 
 class Worker(models.Model):
     class State(models.IntegerChoices):
