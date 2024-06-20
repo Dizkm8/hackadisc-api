@@ -4,7 +4,7 @@
 
 - [Python 3.11](https://www.python.org/downloads/release/python-3119/), puedes verificar tu versión ejecutando el
   comando `python --version`.
-- Puerto 8080 (Django) disponibles.
+- Puerto 8000 (Django) disponibles.
 
 ## Instalación
 
@@ -35,4 +35,4 @@
         python manage.py runserver
     ```
 
-7. La aplicación estará disponible en [http://localhost:8080](http://localhost:8080)
+7. La aplicación estará disponible en [http://localhost:8000](http://localhost:8000)
