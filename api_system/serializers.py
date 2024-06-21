@@ -163,3 +163,11 @@ class CreateInterventionSerializer(serializers.ModelSerializer):
     class Meta:
         model = Intervention
         fields = ['name', 'category', 'competence', 'date', 'description', 'ruts']
+        
+class EvaluationGetSerializer(serializers.ModelSerializer):
+    worker_name = serializers.CharField(source='worker.user_name', read_only=True)
+    company_name = serializers.CharField(source='worker.company.company_name', read_only=True)
+
+    class Meta:
+        model = Evaluation
+        fields = ['id', 'worker_name', 'company_name', 'date', 'adaptability_to_change', 'safe_conduct', 'dynamism_energy', 'personal_effectiveness', 'initiative', 'working_under_pressure']       

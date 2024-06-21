@@ -3,8 +3,8 @@ from rest_framework.views import APIView
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework_simplejwt.authentication import JWTAuthentication
-from .models import Worker, Intervention, InterventionParticipant
-from .serializers import WorkerSerializer, WorkerDetailSerializer, DocumentSerializer, FileSerializer, WorkerWithCheckSerializer, CreateInterventionSerializer
+from .models import Worker, Intervention, InterventionParticipant, Evaluation
+from .serializers import WorkerSerializer, WorkerDetailSerializer, DocumentSerializer, FileSerializer, WorkerWithCheckSerializer, CreateInterventionSerializer, EvaluationGetSerializer
 from .services.FirebaseService import FirebaseService
 from rest_framework.decorators import api_view
 from rest_framework.pagination import LimitOffsetPagination
@@ -144,3 +144,21 @@ def create_intervention(request):
         return Response({"message": "Intervention created successfully"}, status=status.HTTP_201_CREATED)
     else:
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
+@api_view(['GET'])
+def get_all_evaluations(request):
+    # Autenticar y obtener el usuario y token
+    try:
+        (user, token) = JWTAuthentication().authenticate(request)
+    except Exception as e:
+        return Response({"error": str(e)}, status=status.HTTP_401_UNAUTHORIZED)
+
+    # Obtener el company_id del usuario autenticado
+    company_id = user.company_id
+
+    # Obtener todas las evaluaciones que pertenecen a la empresa del usuario autenticado
+    evaluations = Evaluation.objects.filter(worker__company_id=company_id)
+
+    # Serializar los datos de las evaluaciones
+    serializer = EvaluationGetSerializer(evaluations, many=True)
+    return Response(serializer.data, status=status.HTTP_200_OK)
