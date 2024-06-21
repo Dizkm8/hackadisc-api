@@ -120,7 +120,10 @@ REST_FRAMEWORK = {
 
 
 # JWT Configuration
-SIMPLE_JWT = {"ACCESS_TOKEN_LIFETIME": timedelta(hours=2)}
+SIMPLE_JWT = {
+    "ACCESS_TOKEN_LIFETIME": timedelta(hours=2),
+    "TOKEN_OBTAIN_SERIALIZER": "api_auth.serializers.TokenObtainPairSerializer"
+}
 
 # CORS Package Configuration
 # CORS_ALLOWED_ORIGINS = ["http://localhost:5173", "http://127.0.0.1:5173"]
