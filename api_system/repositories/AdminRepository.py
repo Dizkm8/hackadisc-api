@@ -71,7 +71,7 @@ class AdminRepository():
         query = """
             select i.category, count(*) 
                 from api_system_intervention as i 
-                where i.date > now()
+                where not i.is_completed
                 group by i.category
             """
 
@@ -88,7 +88,7 @@ class AdminRepository():
                 from api_system_intervention as i 
                     join api_system_interventionparticipant p on p.intervention_id = i.id 
                     join api_system_worker as w on p.worker_id = w.id 
-                where i.date > now() and i.competence = %s
+                where not i.is_completed and i.competence = %s
                 group by i.category;
             """
         participant_count = dict()
@@ -107,7 +107,7 @@ class AdminRepository():
         select c.company_name,
         (select count(*) from api_system_worker as w where w.company_id = c.id) as worker_count,
         (select count(*) from api_system_worker as w where w.company_id = c.id and w.state != 0) as evaluation_count,
-        (select count(*) from api_system_intervention as i where i.company_id = c.id and i.date > now()) as intervention_count,
+        (select count(*) from api_system_intervention as i where i.company_id = c.id and not i.is_completed) as intervention_count,
         main_c.company_name as main_company,
         contract.start_date,
         contract.end_date

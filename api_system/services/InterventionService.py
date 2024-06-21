@@ -22,6 +22,10 @@ class InterventionService:
         for participation in participants:
             self.worker_service.complete_intervention(participation)
 
+        intervention = Intervention.objects.get(id=intervention_id)
+        intervention.is_completed = True
+        intervention.safe()
+
         return (0,None)
 
     def get_intervention_files(self, intervention_id):

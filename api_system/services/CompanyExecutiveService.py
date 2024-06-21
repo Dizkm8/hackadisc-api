@@ -14,7 +14,7 @@ class CompanyExecutiveService:
         if subunit_id is None:
             subunit_id = self.subunit_id
 
-        is_multi_company = role == ROLE.ADMIN_COMPANY
+        is_multi_company = role == ROLE.ADMIN_MULTICOMPANY
 
         result = dict()
         result["competence_score_average"] = self.repository.get_average_score_by_competence(company_id, is_multi_company)

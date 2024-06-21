@@ -136,14 +136,14 @@ class CompanyExecutiveRepository():
                     select i.category, count(*) 
                         from api_system_intervention as i 
                         join api_system_company as c on i.company_id = c.id
-                        where i.date > now() and c.main_company_id=%s
+                        where not i.is_completed and c.main_company_id=%s
                         group by i.category
                     """
         else:
             query = """
                     select i.category, count(*) 
                         from api_system_intervention as i 
-                        where i.date > now() and i.company_id=%s 
+                        where not i.is_completed and i.company_id=%s 
                         group by i.category
                     """
 
@@ -162,7 +162,7 @@ class CompanyExecutiveRepository():
                             join api_system_interventionparticipant p on p.intervention_id = i.id 
                             join api_system_worker as w on p.worker_id = w.id 
                             join api_system_company as c on i.company_id = c.id
-                        where i.date > now() and i.competence = %s and c.main_company_id=%s
+                        where not i.is_completed and i.competence = %s and c.main_company_id=%s
                         group by i.category;
                     """
         else:
@@ -171,7 +171,7 @@ class CompanyExecutiveRepository():
                         from api_system_intervention as i 
                             join api_system_interventionparticipant p on p.intervention_id = i.id 
                             join api_system_worker as w on p.worker_id = w.id 
-                        where i.date > now() and i.competence = %s and w.company_id=%s 
+                        where not i.is_completed and i.competence = %s and w.company_id=%s 
                         group by i.category;
                     """
         participant_count = dict()

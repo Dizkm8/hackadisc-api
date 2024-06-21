@@ -104,6 +104,7 @@ class Intervention(models.Model):
     date = models.DateTimeField()
     category = models.IntegerField(choices=Category)
     competence = models.IntegerField(choices=Competence)
+    is_completed = models.BooleanField(default=False)
 
 
 class InterventionParticipant(models.Model):

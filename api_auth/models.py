@@ -8,6 +8,7 @@ class ROLE(models.IntegerChoices):
     ADMIN_PIGNUS = 1
     ADMIN_COMPANY = 2
     ADMIN_AREA = 3
+    ADMIN_MULTICOMPANY=4
 
 class UserManager(BaseUserManager):
     def create_user(self, rut, user_name, company_id, area_id, password=None):

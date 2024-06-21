@@ -8,6 +8,7 @@ from .models import (
     InterventionParticipant,
     Worker,
 )
+from .services.FirebaseService import FirebaseService
 
 
 # Intervention
@@ -38,12 +39,16 @@ class InterventionParticipantSerializer(serializers.ModelSerializer):
 class InterventionSerializer(serializers.ModelSerializer):
     class Meta:
         model = Intervention
-        fields = ["id", "name", "description", "date", "category", "competence"]
+        fields = ["id", "name", "description", "date", "category", "competence", "is_completed"]
 
 
 class InterventionDetailSerializer(serializers.ModelSerializer):
-    participants = serializers.SerializerMethodField()
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.storage_service = FirebaseService()
 
+    participants = serializers.SerializerMethodField()
+    files = serializers.SerializerMethodField()
     class Meta:
         model = Intervention
         fields = [
@@ -53,6 +58,8 @@ class InterventionDetailSerializer(serializers.ModelSerializer):
             "category",
             "competence",
             "participants",
+            "is_completed",
+            "files",
         ]
 
     def get_participants(self, obj):
@@ -61,6 +68,8 @@ class InterventionDetailSerializer(serializers.ModelSerializer):
             participants.select_related("worker"), many=True
         ).data
 
+    def get_files(self, obj):
+        return self.storage_service.list_documents(obj.id)
 
 # Company
 class CompanySerializer(serializers.ModelSerializer):

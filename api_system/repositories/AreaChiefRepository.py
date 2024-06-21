@@ -68,7 +68,7 @@ class AreaChiefRepository:
             cursor.execute("""
             select i.category, count(*) 
                 from api_system_intervention as i 
-                where i.date > now() and i.company_id=%s 
+                where not i.is_completed and i.company_id=%s 
                 group by i.category
             """, [company_id])
             columns = [col[0] for col in cursor.description]
@@ -85,7 +85,7 @@ class AreaChiefRepository:
                     from api_system_intervention as i 
                         join api_system_interventionparticipant p on p.intervention_id = i.id 
                         join api_system_worker as w on p.worker_id = w.id 
-                    where i.date > now() and i.competence = %s and w.area_id = %s and w.company_id=%s 
+                    where not i.is_completed and i.competence = %s and w.area_id = %s and w.company_id=%s 
                     group by i.category;
                 """, [competence, area_id, company_id])
                 columns = [col[0] for col in cursor.description]
@@ -101,7 +101,7 @@ class AreaChiefRepository:
                 from api_system_intervention as i 
                     join api_system_interventionparticipant p on p.intervention_id = i.id 
                     join api_system_worker as w on p.worker_id = w.id 
-                where i.date > now() and w.area_id=%s and w.company_id=%s 
+                where not i.is_completed and w.area_id=%s and w.company_id=%s 
                 group by i.id, i.date 
                 order by i.date asc;
             """, [area_id, company_id])
