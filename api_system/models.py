@@ -94,9 +94,11 @@ class Intervention(models.Model):
 
 
 class InterventionParticipant(models.Model):
+    id = models.AutoField(primary_key=True)
     worker = models.ForeignKey("Worker", on_delete=models.CASCADE, related_name="intervention_participants")
     intervention = models.ForeignKey("Intervention", on_delete=models.CASCADE)
     is_completed = models.BooleanField(default=False)
+
 
 
 class InterventionDocument(models.Model):

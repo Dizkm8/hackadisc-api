@@ -8,17 +8,20 @@ from .models import (
     Contract,
 )
 
-class InterventionSerializer(serializers.ModelSerializer):
+class InterventionHistorySerializer(serializers.ModelSerializer):
+    company_name = serializers.CharField(source='company.company_name')
+    
     class Meta:
         model = Intervention
-        fields = ['id', 'name', 'description', 'date', 'category', 'competence']
+        fields = ['id', 'name', 'date', 'competence', 'description', 'category', 'company_name']
 
 class InterventionParticipantSerializer(serializers.ModelSerializer):
-    intervention = InterventionSerializer()
+    intervention = InterventionHistorySerializer()
 
     class Meta:
         model = InterventionParticipant
         fields = ['intervention', 'is_completed']
+
 
 class CompanySerializer(serializers.ModelSerializer):
     class Meta:
