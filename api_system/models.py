@@ -100,7 +100,7 @@ class InterventionParticipant(models.Model):
 
 class InterventionDocument(models.Model):
     intervention = models.ForeignKey("Intervention", on_delete=models.CASCADE)
-    storage_id = models.TextField()
+    storage_id = models.TextField(unique=True)
     name = models.TextField()
 
 class Contract(models.Model):
