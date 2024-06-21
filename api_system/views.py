@@ -4,7 +4,7 @@ from rest_framework import status
 from rest_framework.response import Response
 from rest_framework_simplejwt.authentication import JWTAuthentication
 from .models import Worker, Intervention, InterventionParticipant, Evaluation
-from .serializers import WorkerSerializer, WorkerDetailSerializer, DocumentSerializer, FileSerializer, WorkerWithCheckSerializer, CreateInterventionSerializer, EvaluationGetSerializer
+from .serializers import InterventionSerializer, WorkerSerializer, WorkerDetailSerializer, DocumentSerializer, FileSerializer, WorkerWithCheckSerializer, CreateInterventionSerializer
 from .services.FirebaseService import FirebaseService
 from rest_framework.decorators import api_view
 from rest_framework.pagination import LimitOffsetPagination
@@ -145,20 +145,18 @@ def create_intervention(request):
     else:
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
-@api_view(['GET'])
-def get_all_evaluations(request):
-    # Autenticar y obtener el usuario y token
-    try:
-        (user, token) = JWTAuthentication().authenticate(request)
-    except Exception as e:
-        return Response({"error": str(e)}, status=status.HTTP_401_UNAUTHORIZED)
 
-    # Obtener el company_id del usuario autenticado
-    company_id = user.company_id
+class InterventionListView(APIView):
+    def get(self, request, *args, **kwargs):
+        try:
+            (user, token) = JWTAuthentication().authenticate(request)
+        except Exception as e:
+            return Response({"error": str(e)}, status=status.HTTP_401_UNAUTHORIZED)
 
-    # Obtener todas las evaluaciones que pertenecen a la empresa del usuario autenticado
-    evaluations = Evaluation.objects.filter(worker__company_id=company_id)
-
-    # Serializar los datos de las evaluaciones
-    serializer = EvaluationGetSerializer(evaluations, many=True)
-    return Response(serializer.data, status=status.HTTP_200_OK)
+        # Obtener todas las intervenciones de la empresa del usuario autenticado
+        interventions = Intervention.objects.filter(company_id=user.company_id)
+        
+        paginator = LimitOffsetPagination()
+        paginated_interventions = paginator.paginate_queryset(interventions, request, view=self)
+        serializer = InterventionSerializer(paginated_interventions, many=True)
+        return paginator.get_paginated_response(serializer.data)
