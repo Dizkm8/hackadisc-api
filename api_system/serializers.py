@@ -98,29 +98,14 @@ class WorkerDetailSerializer(serializers.ModelSerializer):
         return evaluation.working_under_pressure if evaluation else None
     
     def get_interventions_history(self, obj):
-        interventions = obj.interventionparticipant_set.all()
+        interventions = obj.intervention_participants.all()
         return InterventionParticipantSerializer(interventions, many=True).data
-
 
 
 class EvaluationSerializer(serializers.ModelSerializer):
     class Meta:
         model = Evaluation
         fields = "__all__"  # You can customize the fields if needed
-
-
-class InterventionCategoryChoiceField(serializers.ChoiceField):
-    # Custom field to display human-readable category names
-    def to_representation(self, value):
-        return self.choices[value][1]
-
-
-class InterventionCompetenceChoiceField(serializers.ChoiceField):
-    # Custom field to display human-readable competence names
-    def to_representation(self, value):
-        return self.choices[value][1]
-
-
 
 
 class ContractSerializer(serializers.ModelSerializer):

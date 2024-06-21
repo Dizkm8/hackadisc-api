@@ -6,20 +6,18 @@ from .models import Worker, Intervention
 from .serializers import  WorkersSerializer, WorkerDetailSerializer, DocumentSerializer, FileSerializer
 from .services.FirebaseService import FirebaseService
 from rest_framework.decorators import api_view
-from rest_framework.pagination import PageNumberPagination
+from rest_framework.pagination import LimitOffsetPagination
 
-class CustomPagination(PageNumberPagination):
-    page_size = 10  # Número de elementos por página
-    page_size_query_param = 'page_size'
-    max_page_size = 100
+class CustomLimitOffsetPagination(LimitOffsetPagination):
+    default_limit = 10
+    max_limit = 100
 
 class WorkerListView(APIView):
     def get(self, request, *args, **kwargs):
         workers = Worker.objects.all()
-        paginator = PageNumberPagination()
-        paginator.page_size = 10  # Puedes ajustar este valor o usar el paginador personalizado
-        paginated_workers = paginator.paginate_queryset(workers, request)
-        serializer = WorkersSerializer(paginated_workers, many=True)
+        paginator = CustomLimitOffsetPagination()
+        result_page = paginator.paginate_queryset(workers, request)
+        serializer = WorkersSerializer(result_page, many=True)
         return paginator.get_paginated_response(serializer.data)
 
 @api_view(['GET'])
