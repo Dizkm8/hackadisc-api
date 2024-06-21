@@ -15,7 +15,7 @@ class WorkerListView(APIView):
             (user, token) = JWTAuthentication().authenticate(request)
         except Exception as e:
             return Response({"error": str(e)}, status=status.HTTP_401_UNAUTHORIZED)
-        workers = Worker.objects.filter(company_id=user.company_id)
+        workers = Worker.objects.filter(company_id=user.company_id, area_id=user.area_id)
         paginator = LimitOffsetPagination()
         paginated_workers = paginator.paginate_queryset(workers, request, view=self)
         serializer = WorkerSerializer(paginated_workers, many=True)
@@ -30,7 +30,7 @@ def get_worker_by_rut(request, rut):
         return Response({"error": str(e)}, status=status.HTTP_401_UNAUTHORIZED)
 
     try:
-        worker = Worker.objects.get(rut=rut, company_id=user.company_id)
+        worker = Worker.objects.get(rut=rut, company_id=user.company_id, area_id=user.area_id)
     except Worker.DoesNotExist:
         return Response({"error": "Worker not found"}, status=status.HTTP_404_NOT_FOUND)
 
@@ -71,7 +71,7 @@ def get_workers_by_competence(request, competence_id):
     competence_field = competence_field_map[competence_id]
 
     # Obtener todos los trabajadores de la empresa del usuario autenticado
-    workers = Worker.objects.filter(company_id=company_id)
+    workers = Worker.objects.filter(company_id=company_id, area_id=user.area_id)
 
     # Serializar los trabajadores
     context = {'request': request, 'competence_id': competence_id}
@@ -132,7 +132,7 @@ def create_intervention(request):
         ruts = serializer.validated_data['ruts']
         for rut in ruts:
             print(rut, company_id)
-            worker = Worker.objects.get(rut=rut, company_id=company_id)
+            worker = Worker.objects.get(rut=rut, company_id=company_id, area_id=user.area_id)
             InterventionParticipant.objects.create(
                 worker=worker,
                 intervention=intervention,

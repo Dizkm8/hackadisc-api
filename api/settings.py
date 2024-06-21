@@ -84,7 +84,7 @@ WSGI_APPLICATION = "api.wsgi.application"
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.postgresql",
-        "NAME": getenv("DB_NAME"),
+        "NAME": getenv("POSTGRESQL_DB_NAME"),
         "OPTIONS": {
             "hostaddr": getenv("POSTGRESQL_DB_HOST"),
             "port": getenv("POSTGRESQL_DB_PORT"),
