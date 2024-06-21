@@ -1,5 +1,5 @@
 from django.db import models
-
+from django.utils.translation import gettext_lazy as _
 
 class Company(models.Model):
     company_name = models.CharField(max_length=100)
@@ -9,10 +9,10 @@ class Company(models.Model):
 
 class Worker(models.Model):
     class State(models.IntegerChoices):
-        NOT_EVALUATED = 0
-        EVALUATED = 1
-        IN_INTERVENTION = 2
-        INTERVENED = 3
+        NOT_EVALUATED = 0, _("No evaluado")
+        EVALUATED = 1, _("Evaluado")
+        IN_INTERVENTION = 2, _("En intervención")
+        INTERVENED = 3, _("Intervenido")
 
     rut = models.CharField(max_length=20, unique=True)
     user_name = models.CharField(max_length=100)
@@ -61,7 +61,6 @@ class Worker(models.Model):
 
 
 class Evaluation(models.Model):
-        
     worker = models.ForeignKey("Worker", on_delete=models.CASCADE)
     date = models.DateTimeField()
     adaptability_to_change = models.FloatField()
@@ -74,17 +73,17 @@ class Evaluation(models.Model):
 
 class Intervention(models.Model):
     class Category(models.IntegerChoices):
-        COURSE = 1
-        TRAINING = 2
-        SPEECH = 3
+        COURSE = 1, _("Curso")
+        TRAINING = 2, _("Capacitación")
+        SPEECH = 3, _("Charla")
 
     class Competence(models.IntegerChoices):
-        ADAPTABILITY = 1
-        CONDUCT = 2
-        DYNAMISM = 3
-        EFFECTIVENESS = 4
-        INITIATIVE = 5
-        PRESSURE = 6
+        ADAPTABILITY = 1, _("Adaptabilidad")
+        CONDUCT = 2, _("Trabajo bajo presión")
+        DYNAMISM = 3, _("Iniciativa")
+        EFFECTIVENESS = 4, _("Dinamismo y energía")
+        INITIATIVE = 5, _("Conducta segura")
+        PRESSURE = 6, _("Efectividad")
 
     company = models.ForeignKey("Company", on_delete=models.CASCADE)
     name = models.CharField(max_length=100)
