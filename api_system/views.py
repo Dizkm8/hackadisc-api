@@ -2,9 +2,11 @@ from rest_framework.parsers import MultiPartParser, FormParser
 from rest_framework.views import APIView
 from rest_framework import status
 from rest_framework.response import Response
+from rest_framework.viewsets import ViewSet
 from rest_framework_simplejwt.authentication import JWTAuthentication
 from .models import Worker, Intervention, InterventionParticipant, Evaluation
 from .serializers import InterventionDetailSerializer, InterventionSerializer, WorkerSerializer, WorkerDetailSerializer, DocumentSerializer, FileSerializer, WorkerWithCheckSerializer, CreateInterventionSerializer
+from .services.AdminService import AdminService
 from .services.AreaChiefService import AreaChiefService
 from .services.CompanyExecutiveService import CompanyExecutiveService
 from .services.FirebaseService import FirebaseService
@@ -201,6 +203,39 @@ class CompanyDashboardView(APIView):
         try:
             return Response(
                 self.company_service.get_statistics(user.role, user.company_id),
+                status=status.HTTP_201_CREATED
+            )
+        except Exception as e:
+            return Response({"error": str(e)}, status=status.HTTP_401_UNAUTHORIZED)
+
+class AdminDashboardView(ViewSet):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.admin_service = AdminService()
+
+    def get(self, request):
+        try:
+            (user, token) = JWTAuthentication().authenticate(request)
+        except Exception as e:
+            return Response({"error": str(e)}, status=status.HTTP_401_UNAUTHORIZED)
+
+        try:
+            return Response(
+                self.admin_service.get_statistics(),
+                status=status.HTTP_201_CREATED
+            )
+        except Exception as e:
+            return Response({"error": str(e)}, status=status.HTTP_401_UNAUTHORIZED)
+
+    def get_company_summary(self, request):
+        try:
+            (user, token) = JWTAuthentication().authenticate(request)
+        except Exception as e:
+            return Response({"error": str(e)}, status=status.HTTP_401_UNAUTHORIZED)
+
+        try:
+            return Response(
+                self.admin_service.get_company_summary(),
                 status=status.HTTP_201_CREATED
             )
         except Exception as e:
