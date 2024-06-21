@@ -4,7 +4,7 @@ from django.db import connection
 from django.db.models import Avg
 from django.forms import model_to_dict
 
-from api_system.models import Evaluation, Contract, Intervention
+from api_system.models import Evaluation, Contract, Intervention, Company
 
 
 class CompanyExecutiveRepository():
@@ -185,11 +185,23 @@ class CompanyExecutiveRepository():
 
         return participant_count
 
-    def get_contract_info(self, company_id):
-        data = list()
-        for contract in Contract.objects.filter(company__id=company_id).all():
-            remaining_time = contract.get_remaining_time_string()
-            info = model_to_dict(contract, fields=["start_date", "end_date"])
-            info["remaining_time"] = remaining_time
-            data.append(info)
-        return data
+    def get_company_info(self, company_id, is_multi_company):
+        def get_info(company):
+            data = {"name": company.company_name, "contracts": list()}
+            for contract in Contract.objects.filter(company__id=company.id).all():
+                remaining_time = contract.get_remaining_time_string()
+                info = model_to_dict(contract, fields=["start_date", "end_date"])
+                info["remaining_time"] = remaining_time
+                data["contracts"].append(info)
+            return data
+
+        company = Company.objects.get(id=company_id)
+        company_info = get_info(company)
+
+        if is_multi_company:
+            company_info["sub_companies"] = list()
+            sub_companies = Company.objects.filter(main_company__id=company.id)
+            for sub_company in sub_companies:
+                company_info["sub_companies"].append(get_info(sub_company))
+
+        return company_info

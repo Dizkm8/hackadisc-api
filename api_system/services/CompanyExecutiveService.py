@@ -23,6 +23,6 @@ class CompanyExecutiveService:
         result["subunit_state_count"] = self.repository.get_worker_count_by_subunit_state(company_id, is_multi_company)
         result["active_intervention"] = self.repository.get_active_intervention_count_by_category (company_id, is_multi_company)
         result["intervention_participants"] = self.repository.get_active_participants_by_competence_category(company_id, is_multi_company)
-        result["contracts"] = self.repository.get_contract_info(company_id)
+        result["company_info"] = self.repository.get_company_info(company_id, is_multi_company)
 
         return result
