@@ -2,14 +2,17 @@ from rest_framework.parsers import MultiPartParser
 from rest_framework.views import APIView
 from rest_framework import status
 from rest_framework.response import Response
+from rest_framework_simplejwt.authentication import JWTAuthentication
 from .models import Worker, Intervention
-from .serializers import WorkerSerializer, WorkerDetailSerializer, DocumentSerializer, FileSerializer
+from .serializers import WorkerSerializer, WorkerDetailSerializer, DocumentSerializer, FileSerializer, WorkerWithCheckSerializer
 from .services.FirebaseService import FirebaseService
 from rest_framework.decorators import api_view
 from rest_framework.pagination import LimitOffsetPagination
 
 class WorkerListView(APIView):
     def get(self, request, *args, **kwargs):
+        (user, token) = JWTAuthentication().authenticate(request)
+        print(user.company_id)
         workers = Worker.objects.all()
         paginator = LimitOffsetPagination()
         paginated_workers = paginator.paginate_queryset(workers, request, view=self)
@@ -26,6 +29,64 @@ def get_worker_by_rut(request, rut):
     serializer = WorkerDetailSerializer(worker)
     return Response(serializer.data)
 
+@api_view(['GET'])
+def get_workers_by_competence(request, competence_id):
+    # Autenticar y obtener el usuario y token
+    try:
+        (user, token) = JWTAuthentication().authenticate(request)
+    except Exception as e:
+        return Response({"error": str(e)}, status=status.HTTP_401_UNAUTHORIZED)
+
+    # Obtener el company_id del usuario autenticado
+    company_id = user.company_id
+
+    # Validar el competence_id
+    try:
+        competence_id = int(competence_id)
+    except ValueError:
+        return Response({"error": "Invalid competence ID"}, status=status.HTTP_400_BAD_REQUEST)
+
+    # Mapa de competencias a los campos correspondientes en el modelo Evaluation
+    competence_field_map = {
+        1: 'adaptability_to_change',
+        2: 'safe_conduct',
+        3: 'dynamism_energy',
+        4: 'personal_effectiveness',
+        5: 'initiative',
+        6: 'working_under_pressure'
+    }
+
+    # Verificar que el competence_id es válido
+    if competence_id not in competence_field_map:
+        return Response({"error": "Invalid competence ID"}, status=status.HTTP_400_BAD_REQUEST)
+
+    competence_field = competence_field_map[competence_id]
+
+    # Obtener todos los trabajadores de la empresa del usuario autenticado
+    workers = Worker.objects.filter(company_id=company_id)
+
+    # Preparar la lista de trabajadores con el campo is_checked
+    workers_with_check = []
+    for worker in workers:
+        is_checked = 0
+        if worker.state == Worker.State.EVALUATED:
+            latest_evaluation = worker.evaluation_set.order_by('-date').first()
+            if latest_evaluation and getattr(latest_evaluation, competence_field) < 0.5:
+                is_checked = 1
+        worker_with_check = {
+            'id': worker.id,
+            'rut': worker.rut,
+            'user_name': worker.user_name,
+            'email': worker.email,
+            'area_name': worker.area_name,
+            'post_name': worker.post_name,
+            'company_name': worker.company.company_name,
+            'state_name': worker.get_state_display(),
+            'is_checked': is_checked
+        }
+        workers_with_check.append(worker_with_check)
+
+    return Response(workers_with_check, status=status.HTTP_200_OK)
 class InterventionDocumentsView(APIView):
     parser_classes = [MultiPartParser]
 

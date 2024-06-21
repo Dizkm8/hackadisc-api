@@ -101,6 +101,39 @@ class WorkerDetailSerializer(serializers.ModelSerializer):
         interventions = obj.intervention_participants.all()
         return InterventionParticipantSerializer(interventions, many=True).data
 
+class WorkerWithCheckSerializer(serializers.ModelSerializer):
+    company_name = serializers.SerializerMethodField()
+    state_name = serializers.CharField(source='get_state_display', read_only=True)
+    is_checked = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Worker
+        fields = [
+            'id', 'rut', 'user_name', 'email', 'area_name', 
+            'post_name', 'company_name', 'state_name', 'is_checked'
+        ]
+    
+    def get_company_name(self, obj):
+        return obj.company.company_name
+    
+    def get_is_checked(self, obj):
+        request = self.context.get('request')
+        competence_id = int(request.GET.get('competence_id'))
+        competence_field_map = {
+            1: 'adaptability_to_change',
+            2: 'safe_conduct',
+            3: 'dynamism_energy',
+            4: 'personal_effectiveness',
+            5: 'initiative',
+            6: 'working_under_pressure'
+        }
+        competence_field = competence_field_map[competence_id]
+        if obj.state == Worker.State.EVALUATED:
+            latest_evaluation = obj.evaluation_set.order_by('-date').first()
+            if latest_evaluation and getattr(latest_evaluation, competence_field) < 0.5:
+                return 1
+        return 0
+    
 class EvaluationSerializer(serializers.ModelSerializer):
     class Meta:
         model = Evaluation

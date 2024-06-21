@@ -61,6 +61,7 @@ class Worker(models.Model):
 
 
 class Evaluation(models.Model):
+        
     worker = models.ForeignKey("Worker", on_delete=models.CASCADE)
     date = models.DateTimeField()
     adaptability_to_change = models.FloatField()

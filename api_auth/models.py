@@ -28,7 +28,7 @@ class UserManager(BaseUserManager):
         if not rut:
             raise ValueError('The RUT field must be set')
 
-        user = self.model(rut=rut, user_name=user_name, company=None, area_id=-1, role=ROLE.ADMIN_PIGNUS)
+        user = self.model(rut=rut, user_name=user_name, company_id=24, area_id=-1, role=ROLE.ADMIN_PIGNUS)
         user.set_password(password)
         user.save(using=self._db)
         return user
