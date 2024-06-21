@@ -8,16 +8,12 @@ from .services.FirebaseService import FirebaseService
 from rest_framework.decorators import api_view
 from rest_framework.pagination import LimitOffsetPagination
 
-class CustomLimitOffsetPagination(LimitOffsetPagination):
-    default_limit = 10
-    max_limit = 100
-
 class WorkerListView(APIView):
     def get(self, request, *args, **kwargs):
         workers = Worker.objects.all()
-        paginator = CustomLimitOffsetPagination()
-        result_page = paginator.paginate_queryset(workers, request)
-        serializer = WorkersSerializer(result_page, many=True)
+        paginator = LimitOffsetPagination()
+        paginated_workers = paginator.paginate_queryset(workers, request, view=self)
+        serializer = WorkersSerializer(paginated_workers, many=True)
         return paginator.get_paginated_response(serializer.data)
 
 @api_view(['GET'])
