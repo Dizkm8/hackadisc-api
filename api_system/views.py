@@ -11,7 +11,10 @@ from rest_framework.pagination import LimitOffsetPagination
 
 class WorkerListView(APIView):
     def get(self, request, *args, **kwargs):
-        (user, token) = JWTAuthentication().authenticate(request)
+        try:
+            (user, token) = JWTAuthentication().authenticate(request)
+        except Exception as e:
+            return Response({"error": str(e)}, status=status.HTTP_401_UNAUTHORIZED)
         workers = Worker.objects.filter(company_id=user.company_id)
         paginator = LimitOffsetPagination()
         paginated_workers = paginator.paginate_queryset(workers, request, view=self)
@@ -20,8 +23,14 @@ class WorkerListView(APIView):
 
 @api_view(['GET'])
 def get_worker_by_rut(request, rut):
+    # Autenticar y obtener el usuario y token
     try:
-        worker = Worker.objects.get(rut=rut)
+        (user, token) = JWTAuthentication().authenticate(request)
+    except Exception as e:
+        return Response({"error": str(e)}, status=status.HTTP_401_UNAUTHORIZED)
+
+    try:
+        worker = Worker.objects.get(rut=rut, company_id=user.company_id)
     except Worker.DoesNotExist:
         return Response({"error": "Worker not found"}, status=status.HTTP_404_NOT_FOUND)
 
