@@ -98,6 +98,10 @@ class InterventionParticipant(models.Model):
     intervention = models.ForeignKey("Intervention", on_delete=models.CASCADE)
     is_completed = models.BooleanField(default=False)
 
+class InterventionDocument(models.Model):
+    intervention = models.ForeignKey("Intervention", on_delete=models.CASCADE)
+    storage_id = models.TextField()
+    name = models.TextField()
 
 class Contract(models.Model):
     company = models.ForeignKey("Company", on_delete=models.CASCADE)
