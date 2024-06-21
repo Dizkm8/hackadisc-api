@@ -37,25 +37,7 @@ class Worker(models.Model):
         """Calculates the letter grade based on the most recent evaluation."""
         latest_evaluation = self.get_latest_evaluation()
         if latest_evaluation:
-            total_score = (
-                float(latest_evaluation.adaptability_to_change)
-                + float(latest_evaluation.safe_conduct)
-                + float(latest_evaluation.dynamism_energy)
-                + float(latest_evaluation.personal_effectiveness)
-                + float(latest_evaluation.initiative)
-                + float(latest_evaluation.working_under_pressure)
-            )
-            average_score = total_score / 6.0  # Assuming 6 evaluation fields
-
-            # Calculate the letter grade based on the average score
-            if average_score >= 0.75:
-                return "A"
-            elif average_score >= 0.5:
-                return "B"
-            elif average_score >= 0.25:
-                return "C"
-            else:
-                return "D"
+            return latest_evaluation.calculate_average_letter_grade()
         else:
             return None  # Default value if no evaluations exist
 
@@ -69,6 +51,37 @@ class Evaluation(models.Model):
     personal_effectiveness = models.FloatField()
     initiative = models.FloatField()
     working_under_pressure = models.FloatField()
+
+    def calculate_average_grade(self):
+        """Calculates the grade."""
+        total_score = (
+                float(self.adaptability_to_change)
+                + float(self.safe_conduct)
+                + float(self.dynamism_energy)
+                + float(self.personal_effectiveness)
+                + float(self.initiative)
+                + float(self.working_under_pressure)
+            )
+        return total_score / 6.0  # Assuming 6 evaluation fields
+
+    def calculate_average_letter_grade(self):
+        """Calculates the letter grade."""
+        average_score = self.calculate_average_grade()
+
+        # Calculate the letter grade based on the average score
+        return self.calculate_letter_grade(average_score)
+
+    @staticmethod
+    def calculate_letter_grade(score):
+        # Calculate the letter grade based on the  score
+        if score >= 0.75:
+            return "A"
+        elif score >= 0.5:
+            return "B"
+        elif score >= 0.25:
+            return "C"
+        else:
+            return "D"
 
 
 class Intervention(models.Model):

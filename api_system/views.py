@@ -5,6 +5,8 @@ from rest_framework.response import Response
 from rest_framework_simplejwt.authentication import JWTAuthentication
 from .models import Worker, Intervention, InterventionParticipant, Evaluation
 from .serializers import InterventionDetailSerializer, InterventionSerializer, WorkerSerializer, WorkerDetailSerializer, DocumentSerializer, FileSerializer, WorkerWithCheckSerializer, CreateInterventionSerializer
+from .services.AreaChiefService import AreaChiefService
+from .services.CompanyExecutiveService import CompanyExecutiveService
 from .services.FirebaseService import FirebaseService
 from rest_framework.decorators import api_view
 from rest_framework.pagination import LimitOffsetPagination
@@ -144,7 +146,7 @@ def create_intervention(request):
         return Response({"message": "Intervention created successfully"}, status=status.HTTP_201_CREATED)
     else:
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-    
+
 
 class InterventionListView(APIView):
     def get(self, request, *args, **kwargs):
@@ -155,12 +157,12 @@ class InterventionListView(APIView):
 
         # Obtener todas las intervenciones de la empresa del usuario autenticado
         interventions = Intervention.objects.filter(company_id=user.company_id)
-        
+
         paginator = LimitOffsetPagination()
         paginated_interventions = paginator.paginate_queryset(interventions, request, view=self)
         serializer = InterventionSerializer(paginated_interventions, many=True)
         return paginator.get_paginated_response(serializer.data)
-    
+
 @api_view(['GET'])
 def get_intervention_detail(request, intervention_id):
     try:
@@ -170,6 +172,45 @@ def get_intervention_detail(request, intervention_id):
 
     serializer = InterventionDetailSerializer(intervention)
     return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+class AreaDashboardView(APIView):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.area_service = AreaChiefService()
+
+    def get(self, request):
+        try:
+            (user, token) = JWTAuthentication().authenticate(request)
+        except Exception as e:
+            return Response({"error": str(e)}, status=status.HTTP_401_UNAUTHORIZED)
+
+        try:
+            return Response(
+                self.area_service.get_statistics(user.company_id, user.area_id),
+                status=status.HTTP_201_CREATED
+            )
+        except Exception as e:
+            return Response({"error": str(e)}, status=status.HTTP_401_UNAUTHORIZED)
+
+class CompanyDashboardView(APIView):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.company_service = CompanyExecutiveService()
+
+    def get(self, request):
+        try:
+            (user, token) = JWTAuthentication().authenticate(request)
+        except Exception as e:
+            return Response({"error": str(e)}, status=status.HTTP_401_UNAUTHORIZED)
+
+        try:
+            return Response(
+                self.company_service.get_statistics(user.role, user.company_id),
+                status=status.HTTP_201_CREATED
+            )
+        except Exception as e:
+            return Response({"error": str(e)}, status=status.HTTP_401_UNAUTHORIZED)
 
 @api_view(['DELETE'])
 def remove_worker_from_intervention(request, intervention_id, worker_rut):
