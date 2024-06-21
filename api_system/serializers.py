@@ -8,6 +8,7 @@ from .models import (
     Contract,
 )
 
+# Intervention
 class InterventionHistorySerializer(serializers.ModelSerializer):
     company_name = serializers.CharField(source='company.company_name')
     
@@ -22,12 +23,32 @@ class InterventionParticipantSerializer(serializers.ModelSerializer):
         model = InterventionParticipant
         fields = ['intervention', 'is_completed']
 
+class InterventionSerializer(serializers.ModelSerializer):
 
+    class Meta:
+        model = Intervention
+        fields = [
+            'id', 'name', 'description', 'date', 'category_name', 'competence_name'
+        ]
+
+class InterventionDetailSerializer(serializers.ModelSerializer):
+    participants = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Intervention
+        fields = ['name', 'description', 'date', 'category', 'competence', 'participants']
+    
+    def get_participants(self, obj):
+        participants = InterventionParticipant.objects.filter(intervention=obj)
+        return WorkerInterventionSerializer(participants.select_related('worker'), many=True).data
+
+# Company
 class CompanySerializer(serializers.ModelSerializer):
     class Meta:
         model = Company
         fields = "__all__"  # You can customize the fields if needed
 
+# Worker
 class WorkerSerializer(serializers.ModelSerializer):  # Aquí está la corrección
     company_name = serializers.SerializerMethodField()
     latest_evaluation_letter_grade = serializers.SerializerMethodField()
@@ -140,10 +161,22 @@ class WorkerWithCheckSerializer(serializers.ModelSerializer):
                 return 1
         return 0
 
+class WorkerInterventionSerializer(serializers.ModelSerializer):
+    rut = serializers.CharField(source='worker.rut')
+    user_name = serializers.CharField(source='worker.user_name')
+    email = serializers.EmailField(source='worker.email')
+    area_name = serializers.CharField(source='worker.area_name')
+
+    class Meta:
+        model = InterventionParticipant
+        fields = ['rut', 'user_name', 'email', 'area_name']
+
+#Evaluation
 class EvaluationSerializer(serializers.ModelSerializer):
     class Meta:
         model = Evaluation
         fields = "__all__"  # You can customize the fields if needed
+
 
 class ContractSerializer(serializers.ModelSerializer):
     class Meta:
@@ -163,3 +196,4 @@ class CreateInterventionSerializer(serializers.ModelSerializer):
     class Meta:
         model = Intervention
         fields = ['name', 'category', 'competence', 'date', 'description', 'ruts']
+        

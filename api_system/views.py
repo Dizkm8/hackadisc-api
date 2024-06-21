@@ -3,8 +3,8 @@ from rest_framework.views import APIView
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework_simplejwt.authentication import JWTAuthentication
-from .models import Worker, Intervention, InterventionParticipant
-from .serializers import WorkerSerializer, WorkerDetailSerializer, DocumentSerializer, FileSerializer, WorkerWithCheckSerializer, CreateInterventionSerializer
+from .models import Worker, Intervention, InterventionParticipant, Evaluation
+from .serializers import InterventionDetailSerializer, InterventionSerializer, WorkerSerializer, WorkerDetailSerializer, DocumentSerializer, FileSerializer, WorkerWithCheckSerializer, CreateInterventionSerializer
 from .services.AreaChiefService import AreaChiefService
 from .services.CompanyExecutiveService import CompanyExecutiveService
 from .services.FirebaseService import FirebaseService
@@ -148,6 +148,32 @@ def create_intervention(request):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
+class InterventionListView(APIView):
+    def get(self, request, *args, **kwargs):
+        try:
+            (user, token) = JWTAuthentication().authenticate(request)
+        except Exception as e:
+            return Response({"error": str(e)}, status=status.HTTP_401_UNAUTHORIZED)
+
+        # Obtener todas las intervenciones de la empresa del usuario autenticado
+        interventions = Intervention.objects.filter(company_id=user.company_id)
+
+        paginator = LimitOffsetPagination()
+        paginated_interventions = paginator.paginate_queryset(interventions, request, view=self)
+        serializer = InterventionSerializer(paginated_interventions, many=True)
+        return paginator.get_paginated_response(serializer.data)
+
+@api_view(['GET'])
+def get_intervention_detail(request, intervention_id):
+    try:
+        intervention = Intervention.objects.get(id=intervention_id)
+    except Intervention.DoesNotExist:
+        return Response({"error": "Intervention not found"}, status=status.HTTP_404_NOT_FOUND)
+
+    serializer = InterventionDetailSerializer(intervention)
+    return Response(serializer.data, status=status.HTTP_200_OK)
+
+
 class AreaDashboardView(APIView):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -177,10 +203,6 @@ class CompanyDashboardView(APIView):
             (user, token) = JWTAuthentication().authenticate(request)
         except Exception as e:
             return Response({"error": str(e)}, status=status.HTTP_401_UNAUTHORIZED)
-        return Response(
-            self.company_service.get_statistics(user.role, user.company_id),
-            status=status.HTTP_201_CREATED
-        )
 
         try:
             return Response(
