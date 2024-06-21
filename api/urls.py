@@ -21,12 +21,13 @@ from rest_framework_simplejwt.views import (
     TokenObtainPairView,
     TokenRefreshView,
 )
-from api_system.views import WorkerListView, InterventionDocumentsView
+from api_system.views import WorkerListView, InterventionDocumentsView, get_worker_by_rut
 
 urlpatterns = [
     path("admin/", admin.site.urls),
     path("api/token/", TokenObtainPairView.as_view(), name="token_obtain_pair"),
     path("api/token/refresh/", TokenRefreshView.as_view(), name="token_refresh"),
     path("api/workers/", WorkerListView.as_view()),
+    path('api/worker/<str:rut>/', get_worker_by_rut, name='get_worker_by_rut'),
     path("api/interventions/<int:id>/documents/", InterventionDocumentsView.as_view())
 ]
