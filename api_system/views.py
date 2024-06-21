@@ -131,15 +131,15 @@ def create_intervention(request):
         # Asignar participantes
         ruts = serializer.validated_data['ruts']
         for rut in ruts:
-            try:
-                worker = Worker.objects.get(rut=rut, company_id=company_id)
-                InterventionParticipant.objects.create(
-                    worker=worker,
-                    intervention=intervention,
-                    is_completed=True
-                )
-            except Worker.DoesNotExist:
-                continue
+            print(rut, company_id)
+            worker = Worker.objects.get(rut=rut, company_id=company_id)
+            InterventionParticipant.objects.create(
+                worker=worker,
+                intervention=intervention,
+                is_completed=True
+            )
+            worker.state = Worker.State.IN_INTERVENTION
+            worker.save()
 
         return Response({"message": "Intervention created successfully"}, status=status.HTTP_201_CREATED)
     else:
