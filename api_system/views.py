@@ -5,6 +5,8 @@ from rest_framework.response import Response
 from rest_framework_simplejwt.authentication import JWTAuthentication
 from .models import Worker, Intervention, InterventionParticipant
 from .serializers import WorkerSerializer, WorkerDetailSerializer, DocumentSerializer, FileSerializer, WorkerWithCheckSerializer, CreateInterventionSerializer
+from .services.AreaChiefService import AreaChiefService
+from .services.CompanyExecutiveService import CompanyExecutiveService
 from .services.FirebaseService import FirebaseService
 from rest_framework.decorators import api_view
 from rest_framework.pagination import LimitOffsetPagination
@@ -144,3 +146,46 @@ def create_intervention(request):
         return Response({"message": "Intervention created successfully"}, status=status.HTTP_201_CREATED)
     else:
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class AreaDashboardView(APIView):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.area_service = AreaChiefService()
+
+    def get(self, request):
+        try:
+            (user, token) = JWTAuthentication().authenticate(request)
+        except Exception as e:
+            return Response({"error": str(e)}, status=status.HTTP_401_UNAUTHORIZED)
+
+        try:
+            return Response(
+                self.area_service.get_statistics(user.company_id, user.area_id),
+                status=status.HTTP_201_CREATED
+            )
+        except Exception as e:
+            return Response({"error": str(e)}, status=status.HTTP_401_UNAUTHORIZED)
+
+class CompanyDashboardView(APIView):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.company_service = CompanyExecutiveService()
+
+    def get(self, request):
+        try:
+            (user, token) = JWTAuthentication().authenticate(request)
+        except Exception as e:
+            return Response({"error": str(e)}, status=status.HTTP_401_UNAUTHORIZED)
+        return Response(
+            self.company_service.get_statistics(user.role, user.company_id),
+            status=status.HTTP_201_CREATED
+        )
+
+        try:
+            return Response(
+                self.company_service.get_statistics(user.role, user.company_id),
+                status=status.HTTP_201_CREATED
+            )
+        except Exception as e:
+            return Response({"error": str(e)}, status=status.HTTP_401_UNAUTHORIZED)

@@ -19,7 +19,8 @@ from django.contrib import admin
 from django.urls import path
 from rest_framework_simplejwt.views import TokenRefreshView
 from api_auth.views import MyTokenObtainPairView
-from api_system.views import WorkerListView, InterventionDocumentsView, get_worker_by_rut, get_workers_by_competence, create_intervention
+from api_system.views import WorkerListView, InterventionDocumentsView, AreaDashboardView, get_worker_by_rut, \
+    get_workers_by_competence, create_intervention, CompanyDashboardView
 
 urlpatterns = [
     path("admin/", admin.site.urls),
@@ -30,6 +31,6 @@ urlpatterns = [
     path("api/interventions/<int:id>/documents/", InterventionDocumentsView.as_view()),
     path('api/workers/competence/<int:competence_id>/', get_workers_by_competence, name='get_workers_by_competence'),
     path('api/create_intervention/', create_intervention, name='create_intervention'),
-
-
+    path('api/dashboard/area', AreaDashboardView.as_view()),
+    path('api/dashboard/company', CompanyDashboardView.as_view())
 ]

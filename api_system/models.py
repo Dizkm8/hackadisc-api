@@ -69,11 +69,16 @@ class Evaluation(models.Model):
         average_score = self.calculate_average_grade()
 
         # Calculate the letter grade based on the average score
-        if average_score >= 0.75:
+        return self.calculate_letter_grade(average_score)
+
+    @staticmethod
+    def calculate_letter_grade(score):
+        # Calculate the letter grade based on the  score
+        if score >= 0.75:
             return "A"
-        elif average_score >= 0.5:
+        elif score >= 0.5:
             return "B"
-        elif average_score >= 0.25:
+        elif score >= 0.25:
             return "C"
         else:
             return "D"
