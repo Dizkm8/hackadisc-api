@@ -67,6 +67,7 @@ class WorkerDetailSerializer(serializers.ModelSerializer):
     def get_company_name(self, obj):
         return obj.company.company_name
     
+    
     def get_latest_evaluation(self, obj):
         try:
             return obj.evaluation_set.latest('date')
@@ -105,20 +106,25 @@ class WorkerWithCheckSerializer(serializers.ModelSerializer):
     company_name = serializers.SerializerMethodField()
     state_name = serializers.CharField(source='get_state_display', read_only=True)
     is_checked = serializers.SerializerMethodField()
+    latest_evaluation_letter_grade = serializers.SerializerMethodField()
+
 
     class Meta:
         model = Worker
         fields = [
             'id', 'rut', 'user_name', 'email', 'area_name', 
-            'post_name', 'company_name', 'state_name', 'is_checked'
+            'post_name', 'company_name', 'state_name', 'is_checked',
+            'latest_evaluation_letter_grade'
         ]
+        
+    def get_latest_evaluation_letter_grade(self, obj):
+        return obj.calculate_latest_evaluation_letter_grade()
     
     def get_company_name(self, obj):
         return obj.company.company_name
     
     def get_is_checked(self, obj):
-        request = self.context.get('request')
-        competence_id = int(request.GET.get('competence_id'))
+        competence_id = self.context.get('competence_id')
         competence_field_map = {
             1: 'adaptability_to_change',
             2: 'safe_conduct',
@@ -133,7 +139,6 @@ class WorkerWithCheckSerializer(serializers.ModelSerializer):
             if latest_evaluation and getattr(latest_evaluation, competence_field) < 0.5:
                 return 1
         return 0
-    
 class EvaluationSerializer(serializers.ModelSerializer):
     class Meta:
         model = Evaluation

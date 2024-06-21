@@ -65,28 +65,11 @@ def get_workers_by_competence(request, competence_id):
     # Obtener todos los trabajadores de la empresa del usuario autenticado
     workers = Worker.objects.filter(company_id=company_id)
 
-    # Preparar la lista de trabajadores con el campo is_checked
-    workers_with_check = []
-    for worker in workers:
-        is_checked = 0
-        if worker.state == Worker.State.EVALUATED:
-            latest_evaluation = worker.evaluation_set.order_by('-date').first()
-            if latest_evaluation and getattr(latest_evaluation, competence_field) < 0.5:
-                is_checked = 1
-        worker_with_check = {
-            'id': worker.id,
-            'rut': worker.rut,
-            'user_name': worker.user_name,
-            'email': worker.email,
-            'area_name': worker.area_name,
-            'post_name': worker.post_name,
-            'company_name': worker.company.company_name,
-            'state_name': worker.get_state_display(),
-            'is_checked': is_checked
-        }
-        workers_with_check.append(worker_with_check)
+    # Serializar los trabajadores
+    context = {'request': request, 'competence_id': competence_id}
+    serializer = WorkerWithCheckSerializer(workers, many=True, context=context)
 
-    return Response(workers_with_check, status=status.HTTP_200_OK)
+    return Response(serializer.data, status=status.HTTP_200_OK)
 class InterventionDocumentsView(APIView):
     parser_classes = [MultiPartParser]
 
