@@ -12,8 +12,7 @@ from rest_framework.pagination import LimitOffsetPagination
 class WorkerListView(APIView):
     def get(self, request, *args, **kwargs):
         (user, token) = JWTAuthentication().authenticate(request)
-        print(user.company_id)
-        workers = Worker.objects.all()
+        workers = Worker.objects.filter(company_id=user.company_id)
         paginator = LimitOffsetPagination()
         paginated_workers = paginator.paginate_queryset(workers, request, view=self)
         serializer = WorkerSerializer(paginated_workers, many=True)
