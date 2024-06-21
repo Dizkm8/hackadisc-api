@@ -86,11 +86,11 @@ DATABASES = {
         "ENGINE": "django.db.backends.postgresql",
         "NAME": getenv("DB_NAME"),
         "OPTIONS": {
-            "hostaddr": getenv("DB_HOST"),
-            "port": getenv("DB_PORT"),
-            "dbname": getenv("DB_NAME"),
-            "user": getenv("DB_USER"),
-            "password": getenv("DB_PASSWD"),
+            "hostaddr": getenv("POSTGRESQL_DB_HOST"),
+            "port": getenv("POSTGRESQL_DB_PORT"),
+            "dbname": getenv("POSTGRESQL_DB_NAME"),
+            "user": getenv("POSTGRESQL_DB_USER"),
+            "password": getenv("POSTGRESQL_DB_PASSWD"),
         },
     }
 }
@@ -115,21 +115,21 @@ AUTH_PASSWORD_VALIDATORS = [
 ]
 
 # Authentication Classes
-AUTH_USER_MODEL = 'api_auth.User'
+AUTH_USER_MODEL = "api_auth.User"
 
 REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": (
         "rest_framework_simplejwt.authentication.JWTAuthentication",
     ),
-    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
-    'PAGE_SIZE': 6
+    "DEFAULT_PAGINATION_CLASS": "rest_framework.pagination.PageNumberPagination",
+    "PAGE_SIZE": 6,
 }
 
 
 # JWT Configuration
 SIMPLE_JWT = {
     "ACCESS_TOKEN_LIFETIME": timedelta(hours=2),
-    "TOKEN_OBTAIN_SERIALIZER": "api_auth.serializers.TokenObtainPairSerializer"
+    "TOKEN_OBTAIN_SERIALIZER": "api_auth.serializers.TokenObtainPairSerializer",
 }
 
 # CORS Package Configuration
