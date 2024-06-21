@@ -170,3 +170,22 @@ def get_intervention_detail(request, intervention_id):
 
     serializer = InterventionDetailSerializer(intervention)
     return Response(serializer.data, status=status.HTTP_200_OK)
+
+@api_view(['DELETE'])
+def remove_worker_from_intervention(request, intervention_id, worker_rut):
+    try:
+        worker = Worker.objects.get(rut=worker_rut)
+    except Worker.DoesNotExist:
+        return Response({"error": "Worker not found"}, status=status.HTTP_404_NOT_FOUND)
+
+    try:
+        intervention = Intervention.objects.get(id=intervention_id)
+    except Intervention.DoesNotExist:
+        return Response({"error": "Intervention not found"}, status=status.HTTP_404_NOT_FOUND)
+
+    try:
+        intervention_participant = InterventionParticipant.objects.get(worker=worker, intervention=intervention)
+        intervention_participant.delete()
+        return Response({"success": "Worker removed from intervention"}, status=status.HTTP_204_NO_CONTENT)
+    except InterventionParticipant.DoesNotExist:
+        return Response({"error": "Worker is not a participant in this intervention"}, status=status.HTTP_404_NOT_FOUND)
