@@ -44,7 +44,12 @@ class FirebaseService:
             # TODO: Handle error messages
             return
         metadata = InterventionDocument(intervention_id=intervention_id, name=file_name, storage_id=path)
-        metadata.save()
+        try:
+            InterventionDocument.objects.get(storage_id=path)
+        except InterventionDocument.DoesNotExist:
+            metadata.save()
+        except InterventionDocument.MultipleObjectsReturned:
+            pass
 
     def upload_documents(self, intervention_id, files):
         metadata = list()
@@ -57,7 +62,14 @@ class FirebaseService:
         for index, result in enumerate(results):
             if result is not None:
                 continue
-            metadata[index].save()
+            try:
+                InterventionDocument.objects.get(storage_id=metadata[index].storage_id)
+            except InterventionDocument.DoesNotExist:
+                metadata[index].save()
+            except InterventionDocument.MultipleObjectsReturned:
+                pass
+            blob = files[index][1]
+            blob.make_public()
         return results
 
     def list_documents(self, intervention_id):
