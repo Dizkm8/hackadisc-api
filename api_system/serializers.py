@@ -24,8 +24,6 @@ class InterventionParticipantSerializer(serializers.ModelSerializer):
         fields = ['intervention', 'is_completed']
 
 class InterventionSerializer(serializers.ModelSerializer):
-    category_name = serializers.CharField(source='get_category_display', read_only=True)
-    competence_name = serializers.CharField(source='get_competence_display', read_only=True)
 
     class Meta:
         model = Intervention
@@ -34,8 +32,6 @@ class InterventionSerializer(serializers.ModelSerializer):
         ]
 
 class InterventionDetailSerializer(serializers.ModelSerializer):
-    category = serializers.CharField(source='get_category_display')
-    competence = serializers.CharField(source='get_competence_display')
     participants = serializers.SerializerMethodField()
 
     class Meta:
