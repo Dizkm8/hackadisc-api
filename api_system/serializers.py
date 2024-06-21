@@ -86,3 +86,11 @@ class ContractSerializer(serializers.ModelSerializer):
     class Meta:
         model = Contract
         fields = "__all__"  # You can customize the fields if needed
+
+
+class DocumentSerializer(serializers.Serializer):
+    name=serializers.CharField()
+    url=serializers.CharField()
+
+class FileSerializer(serializers.Serializer):
+    file=serializers.FileField()
