@@ -3,8 +3,8 @@ from rest_framework.views import APIView
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework_simplejwt.authentication import JWTAuthentication
-from .models import Worker, Intervention
-from .serializers import WorkerSerializer, WorkerDetailSerializer, DocumentSerializer, FileSerializer, WorkerWithCheckSerializer
+from .models import Worker, Intervention, InterventionParticipant
+from .serializers import WorkerSerializer, WorkerDetailSerializer, DocumentSerializer, FileSerializer, WorkerWithCheckSerializer, CreateInterventionSerializer
 from .services.FirebaseService import FirebaseService
 from rest_framework.decorators import api_view
 from rest_framework.pagination import LimitOffsetPagination
@@ -78,6 +78,7 @@ def get_workers_by_competence(request, competence_id):
     serializer = WorkerWithCheckSerializer(workers, many=True, context=context)
 
     return Response(serializer.data, status=status.HTTP_200_OK)
+
 class InterventionDocumentsView(APIView):
     parser_classes = [MultiPartParser]
 
@@ -104,3 +105,42 @@ class InterventionDocumentsView(APIView):
         results = self.storage.upload_documents(id, documents)
         # TODO: handle upload failures
         return Response(results, status=status.HTTP_200_OK)
+
+# intervention
+@api_view(['POST'])
+def create_intervention(request):
+    try:
+        (user, token) = JWTAuthentication().authenticate(request)
+    except Exception as e:
+        return Response({"error": str(e)}, status=status.HTTP_401_UNAUTHORIZED)
+
+    serializer = CreateInterventionSerializer(data=request.data)
+    if serializer.is_valid():
+        company_id = user.company_id
+
+        # Crear la intervención
+        intervention = Intervention.objects.create(
+            company_id=company_id,
+            name=serializer.validated_data['name'],
+            category=serializer.validated_data['category'],
+            competence=serializer.validated_data['competence'],
+            date=serializer.validated_data['date'],
+            description=serializer.validated_data['description']
+        )
+
+        # Asignar participantes
+        ruts = serializer.validated_data['ruts']
+        for rut in ruts:
+            try:
+                worker = Worker.objects.get(rut=rut, company_id=company_id)
+                InterventionParticipant.objects.create(
+                    worker=worker,
+                    intervention=intervention,
+                    is_completed=True
+                )
+            except Worker.DoesNotExist:
+                continue
+
+        return Response({"message": "Intervention created successfully"}, status=status.HTTP_201_CREATED)
+    else:
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

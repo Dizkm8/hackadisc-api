@@ -101,7 +101,6 @@ class InterventionParticipant(models.Model):
     is_completed = models.BooleanField(default=False)
 
 
-
 class InterventionDocument(models.Model):
     intervention = models.ForeignKey("Intervention", on_delete=models.CASCADE)
     storage_id = models.TextField(unique=True)

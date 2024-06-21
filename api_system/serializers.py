@@ -139,6 +139,7 @@ class WorkerWithCheckSerializer(serializers.ModelSerializer):
             if latest_evaluation and getattr(latest_evaluation, competence_field) < 0.5:
                 return 1
         return 0
+
 class EvaluationSerializer(serializers.ModelSerializer):
     class Meta:
         model = Evaluation
@@ -155,3 +156,10 @@ class DocumentSerializer(serializers.Serializer):
 
 class FileSerializer(serializers.Serializer):
     file=serializers.FileField()
+
+class CreateInterventionSerializer(serializers.ModelSerializer):
+    ruts = serializers.ListField(child=serializers.CharField(), write_only=True)
+
+    class Meta:
+        model = Intervention
+        fields = ['name', 'category', 'competence', 'date', 'description', 'ruts']
