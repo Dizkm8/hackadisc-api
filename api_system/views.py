@@ -1,4 +1,4 @@
-from rest_framework.parsers import MultiPartParser
+from rest_framework.parsers import MultiPartParser, FormParser
 from rest_framework.views import APIView
 from rest_framework import status
 from rest_framework.response import Response
@@ -10,6 +10,9 @@ from .services.CompanyExecutiveService import CompanyExecutiveService
 from .services.FirebaseService import FirebaseService
 from rest_framework.decorators import api_view
 from rest_framework.pagination import LimitOffsetPagination
+
+from .services.InterventionService import InterventionService
+
 
 class WorkerListView(APIView):
     def get(self, request, *args, **kwargs):
@@ -81,31 +84,22 @@ def get_workers_by_competence(request, competence_id):
 
     return Response(serializer.data, status=status.HTTP_200_OK)
 
-class InterventionDocumentsView(APIView):
-    parser_classes = [MultiPartParser]
-
+class CompleteInterventionView(APIView):
+    parser_classes = [MultiPartParser, FormParser]
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.storage = FirebaseService()
+        self.intervention_service = InterventionService()
 
-    def get(self, request, id):
-        # TODO: handle permissions
+    def post(self, request, intervention_id):
         try:
-            Intervention.objects.get(id=id)
-        except Intervention.DoesNotExist:
-            return Response("The intervention doesn't exists", status=status.HTTP_400_BAD_REQUEST)
+            (user, token) = JWTAuthentication().authenticate(request)
+        except Exception as e:
+            return Response({"error": str(e)}, status=status.HTTP_401_UNAUTHORIZED)
 
-        documents = self.storage.list_documents(id)
-        serializer = DocumentSerializer(data=documents, many=True)
-        serializer.is_valid(raise_exception=False)
-        return Response(serializer.data, status=status.HTTP_200_OK)
-
-    def post(self, request, id):
         documents = list()
         for document in request.FILES.getlist('documents'):
             documents.append((document.file, document.name))
-        results = self.storage.upload_documents(id, documents)
-        # TODO: handle upload failures
+        results = self.intervention_service.complete_intervention(intervention_id, documents)
         return Response(results, status=status.HTTP_200_OK)
 
 # intervention

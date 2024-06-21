@@ -19,7 +19,7 @@ from django.contrib import admin
 from django.urls import path
 from rest_framework_simplejwt.views import TokenRefreshView
 from api_auth.views import MyTokenObtainPairView
-from api_system.views import WorkerListView, InterventionDocumentsView, InterventionListView, AreaDashboardView, CompanyDashboardView, \
+from api_system.views import WorkerListView, CompleteInterventionView, InterventionListView, AreaDashboardView, CompanyDashboardView, \
     get_workers_by_competence, create_intervention, get_worker_by_rut, get_intervention_detail
 
 urlpatterns = [
@@ -28,11 +28,11 @@ urlpatterns = [
     path("api/token/refresh/", TokenRefreshView.as_view(), name="token_refresh"),
     path("api/workers/", WorkerListView.as_view()),
     path('api/workers/<str:rut>/', get_worker_by_rut, name='get_worker_by_rut'),
-    path("api/interventions/<int:id>/documents/", InterventionDocumentsView.as_view()),
+    path("api/interventions/<int:intervention_id>/complete/", CompleteInterventionView.as_view()),
     path('api/workers/competence/<int:competence_id>/', get_workers_by_competence, name='get_workers_by_competence'),
     path('api/create_intervention/', create_intervention, name='create_intervention'),
     path('api/interventions/', InterventionListView.as_view(), name='intervention_list'),
     path('api/interventions/<int:intervention_id>/', get_intervention_detail, name='get_intervention_detail'),
-
-
+    path('api/dashboard/area', AreaDashboardView.as_view()),
+    path('api/dashboard/company', CompanyDashboardView.as_view()),
 ]
