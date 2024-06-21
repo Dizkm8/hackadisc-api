@@ -20,13 +20,12 @@ class InterventionParticipantSerializer(serializers.ModelSerializer):
         model = InterventionParticipant
         fields = ['intervention', 'is_completed']
 
-
 class CompanySerializer(serializers.ModelSerializer):
     class Meta:
         model = Company
         fields = "__all__"  # You can customize the fields if needed
-        
-class WorkersSerializer(serializers.ModelSerializer):
+
+class WorkerSerializer(serializers.ModelSerializer):  # Aquí está la corrección
     company_name = serializers.SerializerMethodField()
     latest_evaluation_letter_grade = serializers.SerializerMethodField()
     state_name = serializers.CharField(source='get_state_display', read_only=True)
@@ -40,7 +39,6 @@ class WorkersSerializer(serializers.ModelSerializer):
 
     def get_latest_evaluation_letter_grade(self, obj):
         return obj.calculate_latest_evaluation_letter_grade()
-    
 
 class WorkerDetailSerializer(serializers.ModelSerializer):
     company_name = serializers.SerializerMethodField()
@@ -52,7 +50,6 @@ class WorkerDetailSerializer(serializers.ModelSerializer):
     initiative = serializers.SerializerMethodField()
     working_under_pressure = serializers.SerializerMethodField()
     interventions_history = serializers.SerializerMethodField()
-
 
     class Meta:
         model = Worker
@@ -101,18 +98,15 @@ class WorkerDetailSerializer(serializers.ModelSerializer):
         interventions = obj.intervention_participants.all()
         return InterventionParticipantSerializer(interventions, many=True).data
 
-
 class EvaluationSerializer(serializers.ModelSerializer):
     class Meta:
         model = Evaluation
         fields = "__all__"  # You can customize the fields if needed
 
-
 class ContractSerializer(serializers.ModelSerializer):
     class Meta:
         model = Contract
         fields = "__all__"  # You can customize the fields if needed
-
 
 class DocumentSerializer(serializers.Serializer):
     name=serializers.CharField()

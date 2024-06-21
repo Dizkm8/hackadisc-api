@@ -3,7 +3,7 @@ from rest_framework.views import APIView
 from rest_framework import status
 from rest_framework.response import Response
 from .models import Worker, Intervention
-from .serializers import  WorkersSerializer, WorkerDetailSerializer, DocumentSerializer, FileSerializer
+from .serializers import WorkerSerializer, WorkerDetailSerializer, DocumentSerializer, FileSerializer
 from .services.FirebaseService import FirebaseService
 from rest_framework.decorators import api_view
 from rest_framework.pagination import LimitOffsetPagination
@@ -13,7 +13,7 @@ class WorkerListView(APIView):
         workers = Worker.objects.all()
         paginator = LimitOffsetPagination()
         paginated_workers = paginator.paginate_queryset(workers, request, view=self)
-        serializer = WorkersSerializer(paginated_workers, many=True)
+        serializer = WorkerSerializer(paginated_workers, many=True)
         return paginator.get_paginated_response(serializer.data)
 
 @api_view(['GET'])
@@ -30,7 +30,7 @@ class InterventionDocumentsView(APIView):
     parser_classes = [MultiPartParser]
 
     def __init__(self, *args, **kwargs):
-        super(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         self.storage = FirebaseService()
 
     def get(self, request, id):
@@ -47,7 +47,7 @@ class InterventionDocumentsView(APIView):
 
     def post(self, request, id):
         documents = list()
-        for document in request.FILES.getlist('documents') :
+        for document in request.FILES.getlist('documents'):
             documents.append((document.file, document.name))
         results = self.storage.upload_documents(id, documents)
         # TODO: handle upload failures
