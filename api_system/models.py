@@ -1,5 +1,6 @@
 from django.db import models
 from django.utils.translation import gettext_lazy as _
+from .services.DateService import DateService
 
 class Company(models.Model):
     company_name = models.CharField(max_length=100)
@@ -123,3 +124,6 @@ class Contract(models.Model):
     company = models.ForeignKey("Company", on_delete=models.CASCADE)
     start_date = models.DateTimeField()
     end_date = models.DateTimeField()
+
+    def get_remaining_time_string(self):
+        return DateService.format_time_delta(self.end_date, self.start_date)

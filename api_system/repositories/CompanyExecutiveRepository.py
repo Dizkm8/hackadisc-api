@@ -186,4 +186,10 @@ class CompanyExecutiveRepository():
         return participant_count
 
     def get_contract_info(self, company_id):
-        return [model_to_dict(contract, fields=["start_date", "end_date"]) for contract in Contract.objects.filter(company__id = company_id).all()]
+        data = list()
+        for contract in Contract.objects.filter(company__id=company_id).all():
+            remaining_time = contract.get_remaining_time_string()
+            info = model_to_dict(contract, fields=["start_date", "end_date"])
+            info["remaining_time"] = remaining_time
+            data.append(info)
+        return data
