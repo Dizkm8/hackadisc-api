@@ -4,7 +4,7 @@ from rest_framework import status
 from rest_framework.response import Response
 from rest_framework_simplejwt.authentication import JWTAuthentication
 from .models import Worker, Intervention, InterventionParticipant, Evaluation
-from .serializers import InterventionSerializer, WorkerSerializer, WorkerDetailSerializer, DocumentSerializer, FileSerializer, WorkerWithCheckSerializer, CreateInterventionSerializer
+from .serializers import InterventionDetailSerializer, InterventionSerializer, WorkerSerializer, WorkerDetailSerializer, DocumentSerializer, FileSerializer, WorkerWithCheckSerializer, CreateInterventionSerializer
 from .services.FirebaseService import FirebaseService
 from rest_framework.decorators import api_view
 from rest_framework.pagination import LimitOffsetPagination
@@ -160,3 +160,13 @@ class InterventionListView(APIView):
         paginated_interventions = paginator.paginate_queryset(interventions, request, view=self)
         serializer = InterventionSerializer(paginated_interventions, many=True)
         return paginator.get_paginated_response(serializer.data)
+    
+@api_view(['GET'])
+def get_intervention_detail(request, intervention_id):
+    try:
+        intervention = Intervention.objects.get(id=intervention_id)
+    except Intervention.DoesNotExist:
+        return Response({"error": "Intervention not found"}, status=status.HTTP_404_NOT_FOUND)
+
+    serializer = InterventionDetailSerializer(intervention)
+    return Response(serializer.data, status=status.HTTP_200_OK)

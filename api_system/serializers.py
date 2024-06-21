@@ -33,6 +33,19 @@ class InterventionSerializer(serializers.ModelSerializer):
             'id', 'name', 'description', 'date', 'category_name', 'competence_name'
         ]
 
+class InterventionDetailSerializer(serializers.ModelSerializer):
+    category = serializers.CharField(source='get_category_display')
+    competence = serializers.CharField(source='get_competence_display')
+    participants = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Intervention
+        fields = ['name', 'description', 'date', 'category', 'competence', 'participants']
+    
+    def get_participants(self, obj):
+        participants = InterventionParticipant.objects.filter(intervention=obj)
+        return WorkerInterventionSerializer(participants.select_related('worker'), many=True).data
+
 # Company
 class CompanySerializer(serializers.ModelSerializer):
     class Meta:
@@ -151,6 +164,16 @@ class WorkerWithCheckSerializer(serializers.ModelSerializer):
             if latest_evaluation and getattr(latest_evaluation, competence_field) < 0.5:
                 return 1
         return 0
+
+class WorkerInterventionSerializer(serializers.ModelSerializer):
+    rut = serializers.CharField(source='worker.rut')
+    user_name = serializers.CharField(source='worker.user_name')
+    email = serializers.EmailField(source='worker.email')
+    area_name = serializers.CharField(source='worker.area_name')
+
+    class Meta:
+        model = InterventionParticipant
+        fields = ['rut', 'user_name', 'email', 'area_name']
 
 #Evaluation
 class EvaluationSerializer(serializers.ModelSerializer):
