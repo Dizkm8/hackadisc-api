@@ -269,9 +269,10 @@ class AdminDashboardView(ViewSet):
             return Response({"error": str(e)}, status=status.HTTP_401_UNAUTHORIZED)
 
         try:
-            return Response(
-                self.admin_service.get_company_summary(), status=status.HTTP_201_CREATED
-            )
+            summary = self.admin_service.get_company_summary()
+            paginator = LimitOffsetPagination()
+            paginated_summary = paginator.paginate_queryset(summary, request, view=self)
+            return paginator.get_paginated_response(paginated_summary)
         except Exception as e:
             return Response({"error": str(e)}, status=status.HTTP_401_UNAUTHORIZED)
 
