@@ -4,16 +4,27 @@ from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.viewsets import ViewSet
 from rest_framework_simplejwt.authentication import JWTAuthentication
-from .models import Worker, Intervention, InterventionParticipant, Evaluation
-from .serializers import InterventionDetailSerializer, InterventionSerializer, WorkerSerializer, WorkerDetailSerializer, DocumentSerializer, FileSerializer, WorkerWithCheckSerializer, CreateInterventionSerializer
+from .models import Worker, Intervention, InterventionParticipant
+from .serializers import (
+    InterventionDetailSerializer,
+    InterventionSerializer,
+    WorkerSerializer,
+    WorkerDetailSerializer,
+    WorkerWithCheckSerializer,
+    CreateInterventionSerializer,
+)
 from .services.AdminService import AdminService
 from .services.AreaChiefService import AreaChiefService
 from .services.CompanyExecutiveService import CompanyExecutiveService
-from .services.FirebaseService import FirebaseService
 from rest_framework.decorators import api_view
 from rest_framework.pagination import LimitOffsetPagination
 
 from .services.InterventionService import InterventionService
+from openai import OpenAI
+
+openai_client = OpenAI(
+    api_key="sk-proj-JAyTvASXnrZJrC82CU9cT3BlbkFJhMfEp5925C9SkdrOGNGt"
+)
 
 
 class WorkerListView(APIView):
@@ -22,13 +33,16 @@ class WorkerListView(APIView):
             (user, token) = JWTAuthentication().authenticate(request)
         except Exception as e:
             return Response({"error": str(e)}, status=status.HTTP_401_UNAUTHORIZED)
-        workers = Worker.objects.filter(company_id=user.company_id, area_id=user.area_id)
+        workers = Worker.objects.filter(
+            company_id=user.company_id, area_id=user.area_id
+        )
         paginator = LimitOffsetPagination()
         paginated_workers = paginator.paginate_queryset(workers, request, view=self)
         serializer = WorkerSerializer(paginated_workers, many=True)
         return paginator.get_paginated_response(serializer.data)
 
-@api_view(['GET'])
+
+@api_view(["GET"])
 def get_worker_by_rut(request, rut):
     # Autenticar y obtener el usuario y token
     try:
@@ -37,14 +51,17 @@ def get_worker_by_rut(request, rut):
         return Response({"error": str(e)}, status=status.HTTP_401_UNAUTHORIZED)
 
     try:
-        worker = Worker.objects.get(rut=rut, company_id=user.company_id, area_id=user.area_id)
+        worker = Worker.objects.get(
+            rut=rut, company_id=user.company_id, area_id=user.area_id
+        )
     except Worker.DoesNotExist:
         return Response({"error": "Worker not found"}, status=status.HTTP_404_NOT_FOUND)
 
     serializer = WorkerDetailSerializer(worker)
     return Response(serializer.data)
 
-@api_view(['GET'])
+
+@api_view(["GET"])
 def get_workers_by_competence(request, competence_id):
     # Autenticar y obtener el usuario y token
     try:
@@ -59,21 +76,25 @@ def get_workers_by_competence(request, competence_id):
     try:
         competence_id = int(competence_id)
     except ValueError:
-        return Response({"error": "Invalid competence ID"}, status=status.HTTP_400_BAD_REQUEST)
+        return Response(
+            {"error": "Invalid competence ID"}, status=status.HTTP_400_BAD_REQUEST
+        )
 
     # Mapa de competencias a los campos correspondientes en el modelo Evaluation
     competence_field_map = {
-        1: 'adaptability_to_change',
-        2: 'safe_conduct',
-        3: 'dynamism_energy',
-        4: 'personal_effectiveness',
-        5: 'initiative',
-        6: 'working_under_pressure'
+        1: "adaptability_to_change",
+        2: "safe_conduct",
+        3: "dynamism_energy",
+        4: "personal_effectiveness",
+        5: "initiative",
+        6: "working_under_pressure",
     }
 
     # Verificar que el competence_id es válido
     if competence_id not in competence_field_map:
-        return Response({"error": "Invalid competence ID"}, status=status.HTTP_400_BAD_REQUEST)
+        return Response(
+            {"error": "Invalid competence ID"}, status=status.HTTP_400_BAD_REQUEST
+        )
 
     competence_field = competence_field_map[competence_id]
 
@@ -81,13 +102,15 @@ def get_workers_by_competence(request, competence_id):
     workers = Worker.objects.filter(company_id=company_id, area_id=user.area_id)
 
     # Serializar los trabajadores
-    context = {'request': request, 'competence_id': competence_id}
+    context = {"request": request, "competence_id": competence_id}
     serializer = WorkerWithCheckSerializer(workers, many=True, context=context)
 
     return Response(serializer.data, status=status.HTTP_200_OK)
 
+
 class CompleteInterventionView(APIView):
     parser_classes = [MultiPartParser, FormParser]
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.intervention_service = InterventionService()
@@ -99,13 +122,16 @@ class CompleteInterventionView(APIView):
             return Response({"error": str(e)}, status=status.HTTP_401_UNAUTHORIZED)
 
         documents = list()
-        for document in request.FILES.getlist('documents'):
+        for document in request.FILES.getlist("documents"):
             documents.append((document.file, document.name))
-        results = self.intervention_service.complete_intervention(intervention_id, documents)
+        results = self.intervention_service.complete_intervention(
+            intervention_id, documents
+        )
         return Response(results, status=status.HTTP_200_OK)
 
+
 # intervention
-@api_view(['POST'])
+@api_view(["POST"])
 def create_intervention(request):
     try:
         (user, token) = JWTAuthentication().authenticate(request)
@@ -119,27 +145,30 @@ def create_intervention(request):
         # Crear la intervención
         intervention = Intervention.objects.create(
             company_id=company_id,
-            name=serializer.validated_data['name'],
-            category=serializer.validated_data['category'],
-            competence=serializer.validated_data['competence'],
-            date=serializer.validated_data['date'],
-            description=serializer.validated_data['description']
+            name=serializer.validated_data["name"],
+            category=serializer.validated_data["category"],
+            competence=serializer.validated_data["competence"],
+            date=serializer.validated_data["date"],
+            description=serializer.validated_data["description"],
         )
 
         # Asignar participantes
-        ruts = serializer.validated_data['ruts']
+        ruts = serializer.validated_data["ruts"]
         for rut in ruts:
             print(rut, company_id)
-            worker = Worker.objects.get(rut=rut, company_id=company_id, area_id=user.area_id)
+            worker = Worker.objects.get(
+                rut=rut, company_id=company_id, area_id=user.area_id
+            )
             InterventionParticipant.objects.create(
-                worker=worker,
-                intervention=intervention,
-                is_completed=True
+                worker=worker, intervention=intervention, is_completed=True
             )
             worker.state = Worker.State.IN_INTERVENTION
             worker.save()
 
-        return Response({"message": "Intervention created successfully"}, status=status.HTTP_201_CREATED)
+        return Response(
+            {"message": "Intervention created successfully"},
+            status=status.HTTP_201_CREATED,
+        )
     else:
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
@@ -155,16 +184,21 @@ class InterventionListView(APIView):
         interventions = Intervention.objects.filter(company_id=user.company_id)
 
         paginator = LimitOffsetPagination()
-        paginated_interventions = paginator.paginate_queryset(interventions, request, view=self)
+        paginated_interventions = paginator.paginate_queryset(
+            interventions, request, view=self
+        )
         serializer = InterventionSerializer(paginated_interventions, many=True)
         return paginator.get_paginated_response(serializer.data)
 
-@api_view(['GET'])
+
+@api_view(["GET"])
 def get_intervention_detail(request, intervention_id):
     try:
         intervention = Intervention.objects.get(id=intervention_id)
     except Intervention.DoesNotExist:
-        return Response({"error": "Intervention not found"}, status=status.HTTP_404_NOT_FOUND)
+        return Response(
+            {"error": "Intervention not found"}, status=status.HTTP_404_NOT_FOUND
+        )
 
     serializer = InterventionDetailSerializer(intervention)
     return Response(serializer.data, status=status.HTTP_200_OK)
@@ -184,10 +218,11 @@ class AreaDashboardView(APIView):
         try:
             return Response(
                 self.area_service.get_statistics(user.company_id, user.area_id),
-                status=status.HTTP_201_CREATED
+                status=status.HTTP_201_CREATED,
             )
         except Exception as e:
             return Response({"error": str(e)}, status=status.HTTP_401_UNAUTHORIZED)
+
 
 class CompanyDashboardView(APIView):
     def __init__(self, *args, **kwargs):
@@ -203,10 +238,11 @@ class CompanyDashboardView(APIView):
         try:
             return Response(
                 self.company_service.get_statistics(user.role, user.company_id),
-                status=status.HTTP_201_CREATED
+                status=status.HTTP_201_CREATED,
             )
         except Exception as e:
             return Response({"error": str(e)}, status=status.HTTP_401_UNAUTHORIZED)
+
 
 class AdminDashboardView(ViewSet):
     def __init__(self, *args, **kwargs):
@@ -221,8 +257,7 @@ class AdminDashboardView(ViewSet):
 
         try:
             return Response(
-                self.admin_service.get_statistics(),
-                status=status.HTTP_201_CREATED
+                self.admin_service.get_statistics(), status=status.HTTP_201_CREATED
             )
         except Exception as e:
             return Response({"error": str(e)}, status=status.HTTP_401_UNAUTHORIZED)
@@ -235,13 +270,13 @@ class AdminDashboardView(ViewSet):
 
         try:
             return Response(
-                self.admin_service.get_company_summary(),
-                status=status.HTTP_201_CREATED
+                self.admin_service.get_company_summary(), status=status.HTTP_201_CREATED
             )
         except Exception as e:
             return Response({"error": str(e)}, status=status.HTTP_401_UNAUTHORIZED)
 
-@api_view(['DELETE'])
+
+@api_view(["DELETE"])
 def remove_worker_from_intervention(request, intervention_id, worker_rut):
     try:
         worker = Worker.objects.get(rut=worker_rut)
@@ -251,11 +286,40 @@ def remove_worker_from_intervention(request, intervention_id, worker_rut):
     try:
         intervention = Intervention.objects.get(id=intervention_id)
     except Intervention.DoesNotExist:
-        return Response({"error": "Intervention not found"}, status=status.HTTP_404_NOT_FOUND)
+        return Response(
+            {"error": "Intervention not found"}, status=status.HTTP_404_NOT_FOUND
+        )
 
     try:
-        intervention_participant = InterventionParticipant.objects.get(worker=worker, intervention=intervention)
+        intervention_participant = InterventionParticipant.objects.get(
+            worker=worker, intervention=intervention
+        )
         intervention_participant.delete()
-        return Response({"success": "Worker removed from intervention"}, status=status.HTTP_204_NO_CONTENT)
+        return Response(
+            {"success": "Worker removed from intervention"},
+            status=status.HTTP_204_NO_CONTENT,
+        )
     except InterventionParticipant.DoesNotExist:
-        return Response({"error": "Worker is not a participant in this intervention"}, status=status.HTTP_404_NOT_FOUND)
+        return Response(
+            {"error": "Worker is not a participant in this intervention"},
+            status=status.HTTP_404_NOT_FOUND,
+        )
+
+
+class OpenAIGenerateView(APIView):
+    def post(self, request):
+        prompt = request.data.get("prompt")
+
+        chat_completion = openai_client.chat.completions.create(
+            messages=[
+                {
+                    "role": "user",
+                    "content": prompt,
+                }
+            ],
+            model="gpt-3.5-turbo",
+        )
+
+        generated_text = chat_completion.choices[0].message.content
+
+        return Response({"response": generated_text})

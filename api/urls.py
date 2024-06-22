@@ -21,7 +21,8 @@ from rest_framework_simplejwt.views import TokenRefreshView
 from api_auth.views import MyTokenObtainPairView
 from api_system.views import WorkerListView, CompleteInterventionView, InterventionListView, AreaDashboardView, \
     CompanyDashboardView, \
-    get_workers_by_competence, create_intervention, get_worker_by_rut, get_intervention_detail, AdminDashboardView
+    get_workers_by_competence, create_intervention, get_worker_by_rut, get_intervention_detail, AdminDashboardView, \
+    OpenAIGenerateView
 
 urlpatterns = [
     path("admin/", admin.site.urls),
@@ -38,4 +39,6 @@ urlpatterns = [
     path('api/dashboard/company/', CompanyDashboardView.as_view()),
     path('api/dashboard/admin/', AdminDashboardView.as_view({"get": "get"})),
     path('api/dashboard/admin/companies/', AdminDashboardView.as_view({"get": "get_company_summary"})),
+    path('api/chatbot/', OpenAIGenerateView.as_view()),
+
 ]
