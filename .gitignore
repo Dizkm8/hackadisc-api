@@ -178,3 +178,5 @@ pyrightconfig.json
 
 # PostgreSQL data from docker-compose
 postgres-data/
+postgres-data1/
+postgres-data2/
