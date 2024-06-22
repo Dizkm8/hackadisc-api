@@ -154,6 +154,7 @@ def create_intervention(request):
 
         # Asignar participantes
         ruts = serializer.validated_data["ruts"]
+        workers = list()
         for rut in ruts:
             print(rut, company_id)
             worker = Worker.objects.get(
@@ -164,7 +165,8 @@ def create_intervention(request):
             )
             worker.state = Worker.State.IN_INTERVENTION
             worker.save()
-
+            workers.append(worker)
+        InterventionService.send_notification(intervention, workers)
         return Response(
             {"message": "Intervention created successfully"},
             status=status.HTTP_201_CREATED,

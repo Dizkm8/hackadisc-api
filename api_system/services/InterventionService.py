@@ -1,5 +1,9 @@
+from babel.dates import format_datetime
+
 from api_system.models import InterventionParticipant, Intervention
+from api_system.services.EmailBuilderService import EmailBuilderService
 from api_system.services.FirebaseService import FirebaseService
+from api_system.services.GmailService import GmailService
 from api_system.services.WorkerService import WorkerService
 
 
@@ -35,3 +39,30 @@ class InterventionService:
             return (-1, "The intervention doesn't exists")
 
         return (0, self.storage_service.list_documents(intervention_id))
+
+    @staticmethod
+    def send_notification(intervention, workers):
+        gmail = GmailService()
+        builder = EmailBuilderService()
+        original_info = {
+            "intervention": intervention.name,
+            "description": intervention.description,
+            "competence": intervention.get_competence_display(),
+            "category": intervention.get_category_display(),
+            "date": format_datetime(intervention.date, "EEEE d 'de' MMMM 'de' yyyy", locale='es_CL'),
+        }
+
+        bulk_info = list()
+        for worker in workers:
+            info = original_info.copy()
+            info["worker"] = worker.user_name
+            info["email"] = worker.email
+            bulk_info.append(info)
+
+        bulk_messages = builder.compose_all_emails(bulk_info)
+
+        for message in bulk_messages:
+            gmail.send_email(message)
+        gmail.disconnect()
+
+        return
