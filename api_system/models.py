@@ -1,7 +1,6 @@
 from django.db import models
 from django.utils.translation import gettext_lazy as _
 from .services.DateService import DateService
-
 class Company(models.Model):
     company_name = models.CharField(max_length=100)
     is_multi_main = models.BooleanField(default=False)
@@ -127,3 +126,10 @@ class Contract(models.Model):
 
     def get_remaining_time_string(self):
         return DateService.format_time_delta(self.end_date, self.start_date)
+
+class Message(models.Model):
+    id = models.AutoField(primary_key=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    content = models.TextField(max_length=3000, blank=False, null=False)
+    role = models.CharField(max_length=255, blank=False, null=False)
+    user_id = models.IntegerField()

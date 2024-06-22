@@ -46,4 +46,3 @@ class User(AbstractBaseUser):
 
     USERNAME_FIELD = "rut"
     REQUIRED_FIELDS = ["user_name"]
-
