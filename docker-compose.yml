@@ -1,16 +1,15 @@
 services:
-  db:
-    image: postgres:latest
-    container_name: postgres_db
+  backend:
+    build: .
+    command: python manage.py runserver 0.0.0.0:10000
     environment:
-      POSTGRES_DB: mydatabase
-      POSTGRES_USER: myuser
-      POSTGRES_PASSWORD: mypassword
-    volumes:
-      - ./postgres-data:/var/lib/postgresql/data
-    ports:
-      - "5432:5432"
+      - DJANGO_SECRET_KEY=${DJANGO_SECRET_KEY}
+      - GOOGLE_APPLICATION_CREDENTIALS=/code/api_system/resources/hackadisc-firebase-adminsdk-83jqv-d3156e8d2a.json
+      - POSTGRESQL_DB_HOST=${POSTGRESQL_DB_HOST}
+      - POSTGRESQL_DB_PORT=${POSTGRESQL_DB_PORT}
+      - POSTGRESQL_DB_NAME=${POSTGRESQL_DB_NAME}
+      - POSTGRESQL_DB_USER=${POSTGRESQL_DB_USER}
+      - POSTGRESQL_DB_PASSWD=${POSTGRESQL_DB_PASSWD}
 
-volumes:
-  postgres-data:
-    driver: local
+    ports:
+      - "10000:10000"
