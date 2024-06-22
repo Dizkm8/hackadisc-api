@@ -1,29 +1,33 @@
-from rest_framework.parsers import MultiPartParser, FormParser
-from rest_framework.views import APIView
+from os import getenv
+
+from openai import OpenAI
 from rest_framework import status
+from rest_framework.decorators import api_view
+from rest_framework.pagination import LimitOffsetPagination
+from rest_framework.parsers import FormParser, MultiPartParser
 from rest_framework.response import Response
+from rest_framework.views import APIView
 from rest_framework.viewsets import ViewSet
 from rest_framework_simplejwt.authentication import JWTAuthentication
-from .models import Worker, Intervention, InterventionParticipant, Message
+
+from api_auth.models import User
+
+from .models import Intervention, InterventionParticipant, Message, Worker
 from .serializers import (
+    CreateInterventionSerializer,
     InterventionDetailSerializer,
     InterventionSerializer,
-    WorkerSerializer,
     WorkerDetailSerializer,
+    WorkerSerializer,
     WorkerWithCheckSerializer,
-    CreateInterventionSerializer,
 )
 from .services.AdminService import AdminService
 from .services.AreaChiefService import AreaChiefService
 from .services.CompanyExecutiveService import CompanyExecutiveService
-from rest_framework.decorators import api_view
-from rest_framework.pagination import LimitOffsetPagination
-from api_auth.models import User
 from .services.InterventionService import InterventionService
-from openai import OpenAI
 
 openai_client = OpenAI(
-    api_key="sk-proj-JAyTvASXnrZJrC82CU9cT3BlbkFJhMfEp5925C9SkdrOGNGt"
+    api_key=getenv("OPENAI_API_KEY"),
 )
 
 
@@ -321,8 +325,12 @@ class OpenAIGenerateView(APIView):
         conversation_history = []
         if user_id:
             try:
-                user_messages = Message.objects.filter(user_id=user_id, role="user").order_by('created_at')[:10]  # Get recent 5 user messages
-                assistant_messages = Message.objects.filter(user_id=user_id, role="assistant").order_by('created_at')[:10]  # Get recent 5 assistant messages
+                user_messages = Message.objects.filter(
+                    user_id=user_id, role="user"
+                ).order_by("created_at")[:10]  # Get recent 5 user messages
+                assistant_messages = Message.objects.filter(
+                    user_id=user_id, role="assistant"
+                ).order_by("created_at")[:10]  # Get recent 5 assistant messages
                 conversation_history.extend(user_messages)
                 conversation_history.extend(assistant_messages)
             except User.DoesNotExist:
@@ -331,18 +339,19 @@ class OpenAIGenerateView(APIView):
         openai_messages = []
         for message in conversation_history:
             openai_messages.append({"role": message.role, "content": message.content})
-        openai_messages.append({"role": "user", "content": prompt}) 
+        openai_messages.append({"role": "user", "content": prompt})
         print(openai_messages)
         chat_completion = openai_client.chat.completions.create(
             messages=openai_messages,
-            model="gpt-3.5-turbo",
+            model="gpt-4o",
         )
 
         generated_text = chat_completion.choices[0].message.content
 
         if user_id:
             Message.objects.create(content=prompt, role="user", user_id=user_id)
-            Message.objects.create(content=generated_text, role="assistant", user_id=user_id)
+            Message.objects.create(
+                content=generated_text, role="assistant", user_id=user_id
+            )
 
         return Response({"response": generated_text})
-
