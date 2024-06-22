@@ -24,7 +24,7 @@ class InterventionService:
 
         intervention = Intervention.objects.get(id=intervention_id)
         intervention.is_completed = True
-        intervention.safe()
+        intervention.save()
 
         return (0,None)
 
