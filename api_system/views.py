@@ -4,7 +4,7 @@ from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.viewsets import ViewSet
 from rest_framework_simplejwt.authentication import JWTAuthentication
-from .models import Worker, Intervention, InterventionParticipant
+from .models import Worker, Intervention, InterventionParticipant, Message
 from .serializers import (
     InterventionDetailSerializer,
     InterventionSerializer,
@@ -18,7 +18,7 @@ from .services.AreaChiefService import AreaChiefService
 from .services.CompanyExecutiveService import CompanyExecutiveService
 from rest_framework.decorators import api_view
 from rest_framework.pagination import LimitOffsetPagination
-
+from api_auth.models import User
 from .services.InterventionService import InterventionService
 from openai import OpenAI
 
@@ -310,6 +310,24 @@ class OpenAIGenerateView(APIView):
     def post(self, request):
         prompt = request.data.get("prompt")
 
+        try:
+            (user, token) = JWTAuthentication().authenticate(request)
+        except Exception as e:
+            return Response({"error": str(e)}, status=status.HTTP_401_UNAUTHORIZED)
+
+        user_id = user.id 
+
+        if user_id:  
+            try:
+                user = User.objects.get(id=user_id)  
+                Message.objects.create(content=prompt, role="user", user_id=user_id)
+            except User.DoesNotExist:
+                return Response({"error": "Invalid user ID provided"}, status=400)
+        else:
+            return Response({"error": "Invalid user ID provided"}, status=400)
+
+
+
         chat_completion = openai_client.chat.completions.create(
             messages=[
                 {
@@ -323,3 +341,4 @@ class OpenAIGenerateView(APIView):
         generated_text = chat_completion.choices[0].message.content
 
         return Response({"response": generated_text})
+
