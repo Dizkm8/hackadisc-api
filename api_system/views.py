@@ -315,30 +315,33 @@ class OpenAIGenerateView(APIView):
         except Exception as e:
             return Response({"error": str(e)}, status=status.HTTP_401_UNAUTHORIZED)
 
-        user_id = user.id 
+        user_id = user.id
 
-        if user_id:  
+        conversation_history = []
+        if user_id:
             try:
-                user = User.objects.get(id=user_id)  
-                Message.objects.create(content=prompt, role="user", user_id=user_id)
+                user_messages = Message.objects.filter(user_id=user_id, role="user").order_by('created_at')[:10]  # Get recent 5 user messages
+                assistant_messages = Message.objects.filter(user_id=user_id, role="assistant").order_by('created_at')[:10]  # Get recent 5 assistant messages
+                conversation_history.extend(user_messages)
+                conversation_history.extend(assistant_messages)
             except User.DoesNotExist:
                 return Response({"error": "Invalid user ID provided"}, status=400)
-        else:
-            return Response({"error": "Invalid user ID provided"}, status=400)
 
-
-
+        openai_messages = []
+        for message in conversation_history:
+            openai_messages.append({"role": message.role, "content": message.content})
+        openai_messages.append({"role": "user", "content": prompt}) 
+        print(openai_messages)
         chat_completion = openai_client.chat.completions.create(
-            messages=[
-                {
-                    "role": "user",
-                    "content": prompt,
-                }
-            ],
+            messages=openai_messages,
             model="gpt-3.5-turbo",
         )
 
         generated_text = chat_completion.choices[0].message.content
+
+        if user_id:
+            Message.objects.create(content=prompt, role="user", user_id=user_id)
+            Message.objects.create(content=generated_text, role="assistant", user_id=user_id)
 
         return Response({"response": generated_text})
 
