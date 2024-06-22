@@ -4,7 +4,7 @@ services:
     command: python manage.py runserver 0.0.0.0:10000
     environment:
       - DJANGO_SECRET_KEY=${DJANGO_SECRET_KEY}
-      - GOOGLE_APPLICATION_CREDENTIALS=/code/api_system/resources/hackadisc-firebase-adminsdk-83jqv-d3156e8d2a.json
+      - GOOGLE_APPLICATION_CREDENTIALS=${GOOGLE_APPLICATION_CREDENTIALS}
       - POSTGRESQL_DB_HOST=${POSTGRESQL_DB_HOST}
       - POSTGRESQL_DB_PORT=${POSTGRESQL_DB_PORT}
       - POSTGRESQL_DB_NAME=${POSTGRESQL_DB_NAME}

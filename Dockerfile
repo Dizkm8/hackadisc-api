@@ -1,24 +1,21 @@
-# syntax=docker/dockerfile:1.4
+FROM python:3.11.9-alpine
 
-FROM --platform=$BUILDPLATFORM 3.11.9-alpine3.20 AS builder
-EXPOSE 10000
-WORKDIR /app 
-COPY requirements.txt /app
-RUN pip3 install -r requirements.txt --no-cache-dir
-COPY . /app 
-ENTRYPOINT ["python3"] 
-CMD ["manage.py", "runserver", "0.0.0.0:10000"]
+# Set environment variables
+ENV PYTHONDONTWRITEBYTECODE 1
+ENV PYTHONUNBUFFERED 1
 
-FROM builder as dev-envs
-RUN <<EOF
-apk update
-apk add git
-EOF
+# Set the working directory in the container to /app
+WORKDIR /app
 
-RUN <<EOF
-addgroup -S docker
-adduser -S --shell /bin/bash --ingroup docker vscode
-EOF
-# install Docker tools (cli, buildx, compose)
-COPY --from=gloursdocker/docker / /
-CMD ["manage.py", "runserver", "0.0.0.0:10000"]
+# Add the current directory files (on your machine) to the container
+ADD . /app/
+
+# Install any needed packages specified in requirements.txt
+RUN pip install --upgrade pip
+RUN pip install -r requirements.txt
+
+# Expose the port server is running on
+EXPOSE 8000
+
+# Start the server
+CMD ["python", "manage.py", "runserver", "0.0.0.0:8000"]
