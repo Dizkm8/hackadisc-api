@@ -1,4 +1,5 @@
-# API Django Rest Framework con Websockets
+# HackaDISC API
+API para evento [HackaDISC](https://www.instagram.com/p/C8IeO40P5RL/) para incorporar un modulo de trazabilidad de clientes en la plataforma Rehaviour de [PIGNUS](https://www.pignus.cl/rehaviour/). Este proyecto incluye gestión de usuarios, chat con IA mediante openAI, envio de notificaciones por Correo (SMTP), cálculo de estadísticas, este otros.
 
 ## Prerequisitos
 
