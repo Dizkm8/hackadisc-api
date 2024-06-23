@@ -63,3 +63,10 @@ SENDER_NAME # Nombre del usuario que enviará el correo, puede ser ficticio
 TEST_MAIL # Correo electrónico para enviar notificaciones de prueba
 # Util para evitar enviar correos a usuarios reales en ambientes productivos.
 ```
+
+## Autores
+Proyecto diseñado y desarrollado por:
+
+- **David Araya** - [Linkedin](https://www.linkedin.com/in/jose-manuel-alcayaga-marin-88a58926/)
+- **Ignacia Rivas** - [Linkedin](https://www.linkedin.com/in/ignacia-rivas-figueroa-474554257/)
+- **José Alcayaga**  - [Linkedin](https://www.linkedin.com/in/david-araya-cadiz/)
