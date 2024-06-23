@@ -345,7 +345,7 @@ class OpenAIGenerateView(APIView):
         print(openai_messages)
         chat_completion = openai_client.chat.completions.create(
             messages=openai_messages,
-            model="gpt-4o",
+            model=getenv("OPENAI_GPT_MODEL"),
         )
 
         generated_text = chat_completion.choices[0].message.content

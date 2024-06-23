@@ -1,15 +1,16 @@
 services:
-  backend:
-    build: .
-    command: python manage.py runserver 0.0.0.0:10000
+  db2:
+    image: postgres:latest
+    container_name: postgres_db_2
     environment:
-      - DJANGO_SECRET_KEY=${DJANGO_SECRET_KEY}
-      - GOOGLE_APPLICATION_CREDENTIALS=${GOOGLE_APPLICATION_CREDENTIALS}
-      - POSTGRESQL_DB_HOST=${POSTGRESQL_DB_HOST}
-      - POSTGRESQL_DB_PORT=${POSTGRESQL_DB_PORT}
-      - POSTGRESQL_DB_NAME=${POSTGRESQL_DB_NAME}
-      - POSTGRESQL_DB_USER=${POSTGRESQL_DB_USER}
-      - POSTGRESQL_DB_PASSWD=${POSTGRESQL_DB_PASSWD}
-
+      POSTGRES_DB: mydatabase
+      POSTGRES_USER: myuser
+      POSTGRES_PASSWORD: mypassword
+    volumes:
+      - ./postgres-data2:/var/lib/postgresql/data
     ports:
-      - "10000:10000"
+      - "5432:5432"
+
+volumes:
+  postgres-data:
+    driver: local
