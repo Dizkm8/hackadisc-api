@@ -67,6 +67,6 @@ TEST_MAIL # Correo electrónico para enviar notificaciones de prueba
 ## Autores
 Proyecto diseñado y desarrollado por:
 
-- **David Araya** - [Linkedin](https://www.linkedin.com/in/jose-manuel-alcayaga-marin-88a58926/)
+- **David Araya** - [Linkedin](https://www.linkedin.com/in/david-araya-cadiz/)
 - **Ignacia Rivas** - [Linkedin](https://www.linkedin.com/in/ignacia-rivas-figueroa-474554257/)
-- **José Alcayaga**  - [Linkedin](https://www.linkedin.com/in/david-araya-cadiz/)
+- **José Alcayaga**  - [Linkedin](https://www.linkedin.com/in/jose-manuel-alcayaga-marin-88a58926/)
