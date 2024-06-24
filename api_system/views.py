@@ -315,8 +315,15 @@ def remove_worker_from_intervention(request, intervention_id, worker_rut):
 
 class OpenAIGenerateView(APIView):
     def post(self, request):
-        prompt = request.data.get("prompt")
-
+        prompt: str = request.data.get("prompt")
+        if not prompt:
+            return Response(
+                {"error": "Prompt is required"}, status=status.HTTP_400_BAD_REQUEST
+            )
+        if len(prompt) > 200:
+            return Response(
+                {"error": "Prompt is too long"}, status=status.HTTP_400_BAD_REQUEST
+            )
         try:
             (user, token) = JWTAuthentication().authenticate(request)
         except Exception as e:
